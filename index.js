@@ -18,13 +18,14 @@ app.get("/", function(req, res) {
 });
 
 function sendDataToMainServer() {
-  var sqlBillingNotSend = "SELECT billing_no FROM billing WHERE status is null LIMIT 1";
+  var sqlBillingNotSend = "SELECT billing_no FROM billing WHERE status is null";
   connection.query(sqlBillingNotSend, function(err, result) {
     if (result.length==0 || result==undefined) {
       console.log('err: no data to send');
       return { status: "No_Data_1" };
     } else {     
       // console.log(result[0].billing_no);
+      for(i=0;i<result.length;i++){
       let sqlquery ="SELECT b.user_id,b.mer_authen_level,b.member_code,b.carrier_id,b.billing_no,b.branch_id,b.total,b.img_url,"+
           "bItem.tracking,bItem.size_id,bItem.size_price,bItem.parcel_type,bItem.cod_value,"+
           "br.sender_name,br.sender_phone,br.sender_address,br.receiver_name,br.phone,br.receiver_address,d.DISTRICT_CODE,"+
@@ -39,10 +40,10 @@ function sendDataToMainServer() {
           "JOIN postinfo_amphur a ON br.amphur_id=a.AMPHUR_ID "+
           "JOIN postinfo_province p ON br.province_id=p.PROVINCE_ID "+
           "JOIN postinfo_geography g ON d.GEO_ID=g.GEO_ID "+
-          // "WHERE bItem.billing_no='" + result[i].billing_no + "'";
-          "WHERE bItem.billing_no='47-958-191118163055-986'";
+          "WHERE bItem.billing_no='" + result[i].billing_no + "'";
+          // "WHERE bItem.billing_no='47-958-191118184222-248'";
         connection.query(sqlquery, function(err, data) {
-            console.log('data',data);
+            // console.log('data',data);
             if (data.length==0) {
               console.log("err: Data Not Complete");
               return { status: "No_Data_2" };
@@ -115,7 +116,7 @@ function sendDataToMainServer() {
                     orderlist: orderlist
                   }
                 }
-                // console.log(dataAll);
+                // console.log(JSON.stringify(dataAll));
                 
                 request(
                   {
@@ -150,7 +151,7 @@ function sendDataToMainServer() {
               
             }
         })
-      
+      }
     }
   })
 }
