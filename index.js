@@ -41,7 +41,6 @@ function sendDataToMainServer() {
           "JOIN postinfo_geography g ON d.GEO_ID=g.GEO_ID "+
           // "WHERE bItem.billing_no='" + result[i].billing_no + "'";
           "WHERE bItem.billing_no='47-958-191118163055-986'";
-          // console.log(sqlquery)
         connection.query(sqlquery, function(err, data) {
             console.log('data',data);
             if (data.length==0) {
