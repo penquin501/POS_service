@@ -1,0 +1,7 @@
+version: "2.4"
+services:
+  webapp:
+    build: webapp
+    image: sunteen-reg.ut9.me:5000/workshop/main-parcel-api
+    ports:
+      - "80:3200"
