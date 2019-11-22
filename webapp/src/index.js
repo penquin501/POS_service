@@ -21,7 +21,7 @@ app.get("/", function (req, res) {
 function sendDataToMainServer() {
   var sqlBillingNotSend = "SELECT billing_no FROM billing WHERE status is null";
   connection.query(sqlBillingNotSend, function (err, result) {
-    if (result.length != 0) {
+    if (result.length !== 0) {
       for (r = 0; r < result.length; r++) {
         let sqlquery = "SELECT b.user_id,b.mer_authen_level,b.member_code,b.carrier_id,b.billing_no,b.branch_id,b.total,b.img_url," +
           "bItem.tracking,bItem.size_id,bItem.size_price,bItem.parcel_type,bItem.cod_value," +
@@ -40,7 +40,7 @@ function sendDataToMainServer() {
           "WHERE bItem.billing_no='" + result[r].billing_no + "'";
 
         connection.query(sqlquery, function (err, data) {
-          if (data.length != 0) {
+          if (data.length !== 0) {
             var check_pass
             for (i = 0; i < data.length; i++) {
               if (!data[i].user_id || !data[i].mer_authen_level || !data[i].member_code || !data[i].carrier_id ||
@@ -154,8 +154,12 @@ function sendDataToMainServer() {
 // cron.schedule('1-5 * * * *', () => {
 function pushCaptureData() {
   var listBarcode = '';
+  var dateTimeString = moment(new Date).format("YYYY-MM-DD", true);
   // var sqlParcelCapture = "SELECT barcode FROM parcel_capture_data";
-  var sqlParcelCapture = "SELECT barcode FROM parcel_capture_data pCap JOIN billing_item bi ON pCap.barcode=bi.tracking JOIN billing_receiver_info br ON pCap.barcode=br.tracking";
+  var sqlParcelCapture = "SELECT pCap.barcode FROM parcel_capture_data pCap "+
+  "JOIN billing_item bi ON pCap.barcode=bi.tracking "+
+  "JOIN billing_receiver_info br ON pCap.barcode=br.tracking "+
+  "WHERE DATE(pCap.record_created_at)='"+dateTimeString+"'";
   connection.query(sqlParcelCapture, function (err, result) {
 
     if (result.length == 0) {
@@ -165,10 +169,11 @@ function pushCaptureData() {
         listBarcode = listBarcode + "'" + result[i].barcode + "',";
       }
     }
-
-    var sqlCapture = "SELECT consignmentno,rawdata FROM parcel_temp_capture WHERE recorddate = CURRENT_DATE AND consignmentno NOT IN (" + listBarcode.replace(/,$/, '') + ") LIMIT 1";
+    
+    // var sqlCapture = "SELECT consignmentno,rawdata FROM parcel_temp_capture WHERE recorddate = '2019-11-23' AND consignmentno NOT IN (" + listBarcode.replace(/,$/, '') + ") LIMIT 1";
+    var sqlCapture="SELECT consignmentno,rawdata FROM parcel_temp_capture WHERE recorddate = '"+dateTimeString+"' AND consignmentno NOT IN (" + listBarcode.replace(/,$/, '') + ") LIMIT 1"
     billing_connection.query(sqlCapture, function (err, result2) {
-      if (result2.length != 0) {
+      if (result2.length !== 0) {
         for (j = 0; j < result2.length; j++) {
           request(
             {
@@ -183,7 +188,7 @@ function pushCaptureData() {
             (err, res, body) => {
               if (res.body) {
                 console.log("result capture: ", JSON.parse(res.body).status);
-              }
+              }        
             })
         }
       }
@@ -196,7 +201,7 @@ function insertKeyInData() {
     "JOIN billing_receiver_info br ON bi.tracking=br.tracking " +
     "WHERE (bi.source IS NULL OR bi.source='QUICKLINK') AND br.receiver_name IS NULL";
   connection.query(sqlParcelKeyIn, function (err, result) {
-    if (result.length != 0) {
+    if (result.length !== 0) {
       for (i = 0; i < result.length; i++) {
         var sqlKeyIn = "SELECT consignmentno,rawdata,recordtimestamp FROM parcel_keyin_data WHERE consignmentno='" + result[i].tracking + "' ORDER BY recordtimestamp DESC";
         billing_connection.query(sqlKeyIn, function (err, result2) {
@@ -238,7 +243,7 @@ function pushKeyInData() {
 
     var sqlKeyIn = "SELECT consignmentno,rawdata,recordtimestamp FROM parcel_keyin_data where recorddate=CURRENT_DATE and recordtimestamp>'" + max_record + "'";
     billing_connection.query(sqlKeyIn, function (err, result2) {
-      if (result2.length != 0) {
+      if (result2.length !== 0) {
         for (j = 0; j < result2.length; j++) {
 
           var dateTimeString = moment(result2[j].recordtimestamp).format("YYYY-MM-DD HH:mm:ss", true);
@@ -269,7 +274,7 @@ function pushKeyInData() {
 function pushReceiverTempToReceiverInfo() {
   var sqlReceiverInfo = "SELECT tracking,parcel_type,zipcode FROM billing_receiver_info where receiver_name is null AND remark ='QUICKLINK'";
   connection.query(sqlReceiverInfo, function (err, result) {
-    if (result.length != 0) {
+    if (result.length !== 0) {
       for (i = 0; i < result.length; i++) {
         var tracking_info = result[i].tracking;
         var parcel_type_info = result[i].parcel_type;
@@ -278,7 +283,7 @@ function pushReceiverTempToReceiverInfo() {
         var sqlReceiverTempInfo = "SELECT * FROM billing_receiver_info_temp where tracking='" + tracking_info + "'";
         connection.query(sqlReceiverTempInfo, function (err, result2) {
 
-          if (result2.length != 0 && (parcel_type_info == result2[0].parcel_type) && (zipcode_info == result2[0].zipcode)) {
+          if (result2.length !== 0 && (parcel_type_info == result2[0].parcel_type) && (zipcode_info == result2[0].zipcode)) {
 
             var sqlUpdateReceiver = "UPDATE billing_receiver_info SET receiver_name='" + result2[0].receiver_name + "',phone='" + result2[0].phone + "',receiver_address='" + result2[0].receiver_address + "',district_id='" + result2[0].district_id + "',district_name='" + result2[0].district_name + "',"
               + "amphur_id='" + result2[0].amphur_id + "',amphur_name='" + result2[0].amphur_name + "',province_id='" + result2[0].province_id + "',province_name='" + result2[0].province_name + "',remark='KEYIN' where tracking='" + result2[0].tracking + "'";
