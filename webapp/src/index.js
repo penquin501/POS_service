@@ -296,9 +296,9 @@ function pushReceiverTempToReceiverInfo() {
   })
 }
 setInterval(sendDataToMainServer, 15000);
-setInterval(pushCaptureData, 3000);
+// setInterval(pushCaptureData, 3000);
 // setInterval(pushKeyInData, 10000);
-setInterval(pushReceiverTempToReceiverInfo, 5000);
-setInterval(insertKeyInData, 10000);
+// setInterval(pushReceiverTempToReceiverInfo, 5000);
+// setInterval(insertKeyInData, 10000);
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
