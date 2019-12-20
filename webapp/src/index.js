@@ -130,18 +130,103 @@ myFunction = async (t) => {
   console.log("%s   Start execute myFunction(%d)", m().format(t_format), tid);
   console.log("%s     process about %ds", m().format(t_format), sim_execute_time);
   //---------------
-    // await updateServices.selectBillingNotSend().then(function (listBilling) { 
-      // if(listBilling!==null) {
-        // for(i=0;i<listBilling.length;i++) {
-          // billing=listBilling[i].billing_no
-          billing='47-1108-191220163458-601'
+    await updateServices.selectBillingNotSend().then(function (listBilling) { 
+      if(listBilling!==null) {
+        for(i=0;i<listBilling.length;i++) {
+          billing=listBilling[i].billing_no
+          // billing='47-1108-191220163458-601'
           updateServices.selectDataInBillNo(billing).then(function (res) {
-            console.log(JSON.stringify(res));
+            var orderlist = [];
+            var paymentType = "";
+            let dataBilling=res.billingInfo
+            let data=res.billingItem
+
+            for (j = 0; j < data.length; j++) {
+              if (data[j].parcel_type == "NORMAL") {
+                paymentType = "99";
+              } else {
+                paymentType = "60";
+              }
+              dataDes = {
+                productinfo: {
+                  globalproductid: data[j].product_id,
+                  productname: data[j].product_name,
+                  methodtype: data[j].bi_parcel_type.toUpperCase(),
+                  paymenttype: paymentType,
+                  price: data[j].size_price.toString(),
+                  codvalue: data[j].cod_value.toString()
+                },
+                destinationinfo: {
+                  custname: data[j].receiver_name,
+                  custphone: data[j].phone,
+                  custzipcode: data[j].br_zipcode,
+                  custaddr: data[j].receiver_address,
+                  ordershortnote: '',
+                  districtcode: data[j].DISTRICT_CODE,
+                  amphercode: data[j].AMPHUR_CODE,
+                  provincecode: data[j].PROVINCE_CODE,
+                  geoid: data[j].GEO_ID,
+                  geoname: data[j].GEO_NAME,
+                  sendername: data[j].sender_name,
+                  senderphone: data[j].sender_phone,
+                  senderaddr: data[j].sender_address
+                },
+                consignmentno: data[j].tracking
+              };
+              orderlist.push(dataDes);
+            }
+            
+            var dataAll = {
+              authen: {
+                merid: dataBilling[0].branch_id,
+                userid: dataBilling[0].user_id,
+                merauthenlevel: dataBilling[0].mer_authen_level
+              },
+              memberparcel: {
+                memberinfo: {
+                  memberid: dataBilling[0].member_code,
+                  courierpid: dataBilling[0].carrier_id,
+                  courierimage: dataBilling[0].img_url
+                },
+                billingno: dataBilling[0].billing_no,
+                orderlist: orderlist
+              }
+            }
+            console.log(dataBilling[0].billing_no);
+            // request(
+            //   {
+            //     url:
+            //       "https://dev.945holding.com/webservice/restful/parcel/order_record/v11/data",
+            //     method: "POST",
+            //     body: dataAll,
+            //     json: true,
+            //     headers: {
+            //       'apikey': 'XbOiHrrpH8aQXObcWj69XAom1b0ac5eda2b',
+            //       'Content-Type': 'application/json'
+            //     }
+            //   },
+            //   (err, res, body) => {
+            //     if (res) {
+            //       console.log(res.body);
+            //       if (res.body.checkpass == 'pass' && res.body.bill_no == 'data_varidated_pass') {
+            //         let updateBilling = "UPDATE billing_test SET status='" + res.body.checkpass + "' WHERE billing_no='" + dataBilling[0].billing_no + "'"
+            //         connection.query(updateBilling, function (err, dataBilling) { })
+
+            //         listStatus = res.body.status
+            //         for (q = 0; q < listStatus.length; q++) {
+            //           var tracking = listStatus[q].consignmentno
+            //           var status = listStatus[q].status
+            //           var dateTimeString = moment(new Date).format("YYYY-MM-DD HH:mm:ss", true);
+            //           updateServices.updateStatusReceiverInfo(tracking, status, dateTimeString).then(function (data) { })
+            //         }
+            //       }
+            //     }
+            //   })
           }) 
-        // }
-      // }
+        }
+      }
       
-    // })
+    })
 
   //---------------
 
