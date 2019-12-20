@@ -3,6 +3,7 @@ const request = require('request');
 var cron = require('node-cron');
 const app = express();
 const moment = require('moment');
+var m = require('moment-timezone');
 const port = process.env.PORT || 3200;
 moment.locale('th')
 app.use(express.json());
@@ -12,21 +13,174 @@ const billing_connection = require("./env/mainDB");
 
 const updateServices = require('./services/updateService.js');
 
-app.get("/", function (req, res) {
-  res.json({ 'hello': 'World' });
-  // insertKeyInData()
-});
+app.get("/senddata", function (req, res) {
+  // res.json({ 'hello': 'World' });
+  var dataAuthen = {
+    user_id: 783,
+    branch_id: 47,
+    mer_authen_level: "admin"
+  };
 
+  var dataBill = {
+    billing_no: '47-783-191219160646-401'
+  };
+
+  sendDataToMainServerTemp(dataAuthen,dataBill);
+});
+function sendDataToMainServerTemp(dataAuthen, dataBill) {
+  var orderlist = [];
+  var paymentType = "";
+
+  updateServices.selectDataInBillNo(dataBill.billing_no).then(function (data) {
+    console.log(data.length);
+    for (i = 0; i < data.length; i++) {
+      // "paymenttype": "99",99=normal,60=cod
+      if (data[i].parcel_type.toUpperCase() == "NORMAL") {
+        paymentType = "99";
+      } else {
+        paymentType = "60";
+      }
+      dataDes = {
+        productinfo: {
+          globalproductid: data[i].product_id,
+          productname: data[i].product_name,
+          methodtype: data[i].parcel_type.toUpperCase(),
+          paymenttype: paymentType,
+          price: data[i].size_price.toString(),
+          codvalue: data[i].cod_value.toString()
+        },
+        destinationinfo: {
+          custname: data[i].receiver_name,
+          custphone: data[i].phone,
+          custzipcode: data[i].zipcode,
+          custaddr: data[i].receiver_address,
+          //   "custdistrict": data[i].district_name,
+          //   "custamphur": data[i].amphur_name,
+          //   "custprovince": data[i].province_name,
+          ordershortnote: data[i].remark,
+          districtcode: data[i].DISTRICT_CODE,
+          amphercode: data[i].AMPHUR_CODE,
+          provincecode: data[i].PROVINCE_CODE,
+          geoid: data[i].GEO_ID,
+          geoname: data[i].GEO_NAME,
+          sendername: data[i].sender_name,
+          senderphone: data[i].sender_phone,
+          senderaddr: data[i].sender_address
+        },
+        consignmentno: data[i].tracking
+      };
+      orderlist.push(dataDes);
+    }
+
+    var dataAll = {
+      authen: {
+        merid: dataAuthen.branch_id,
+        userid: dataAuthen.user_id,
+        merauthenlevel: dataAuthen.mer_authen_level
+      },
+      memberparcel: {
+        memberinfo: {
+          memberid: data[0].member_code,
+          courierpid: data[0].carrier_id,
+          courierimage: data[0].img_url
+        },
+        billingno: dataBill.billing_no,
+        orderlist: orderlist
+      }
+    };
+    console.log("dataAll", JSON.stringify(dataAll));
+    request({
+        url: "https://www.945holding.com/webservice/restful/parcel/order_record/v11/data",
+        method: "POST",
+        body: dataAll,
+        json: true,
+        headers: {
+          apikey: "XbOiHrrpH8aQXObcWj69XAom1b0ac5eda2b",
+          "Content-Type": "application/json"
+        }
+      },
+      (err, res, body) => {
+        // console.log(res.body);
+        if (
+          res.body.checkpass == "pass" &&
+          res.body.bill_no == "data_varidated_pass"
+        ) {
+          updateServices.updateStatusBilling(dataBill.billing_no, res.body.checkpass).then(function (data) {});
+          listStatus = res.body.status;
+          for (i = 0; i < listStatus.length; i++) {
+            var tracking = listStatus[i].consignmentno;
+            var status = listStatus[i].status;
+            updateServices.updateStatusReceiverInfo(tracking, status).then(function (data) {});
+          }
+        }
+      }
+    );
+  });
+}
+
+var t = 0;
+let t_format = 'HH:mm:ss.SSS';
+var sim_execute_time = 1000;
+var execute_interval = 5 * 1000;
+var hot_delay = 100;
+var task_number = 0;
+
+myFunction = async (t) => {
+  let tid = t;
+  console.log("%s   Start execute myFunction(%d)", m().format(t_format), tid);
+  console.log("%s     process about %ds", m().format(t_format), sim_execute_time);
+  //---------------
+    // await updateServices.selectBillingNotSend().then(function (listBilling) { 
+      // if(listBilling!==null) {
+        // for(i=0;i<listBilling.length;i++) {
+          // billing=listBilling[i].billing_no
+          billing='47-1108-191220163458-601'
+          updateServices.selectDataInBillNo(billing).then(function (res) {
+            console.log(JSON.stringify(res));
+          }) 
+        // }
+      // }
+      
+    // })
+
+  //---------------
+
+  sim_execute_time += 500;
+}
+
+task4  = async () => {
+    let start_time = (new Date()).getTime();
+    
+    //-------------- CODE -----------//
+    await myFunction();
+    //---------------
+
+    let end_time = (new Date()).getTime(); 
+    let actual_execute_time = end_time - start_time;
+    console.log("%s Actual Execute Time = %d", m().format(t_format), actual_execute_time);
+    let delay_time = Math.max(execute_interval - actual_execute_time, hot_delay);
+    console.log("%s Delay Time = %d", m().format(t_format), delay_time);
+    setTimeout(task4, delay_time);
+    
+}
+
+main = async() =>{
+  task4();
+}
+
+main()
 // cron.schedule('50-59 * * * *', () => {
 function sendDataToMainServer() {
   var sqlBillingNotSend = "SELECT billing_no FROM billing WHERE status is null";
   connection.query(sqlBillingNotSend, function (err, result) {
+
     if (result.length !== 0) {
       for (r = 0; r < result.length; r++) {
+
         let sqlquery = "SELECT b.user_id,b.mer_authen_level,b.member_code,b.carrier_id,b.billing_no,b.branch_id,b.total,b.img_url," +
-          "bItem.tracking,bItem.size_id,bItem.size_price,bItem.parcel_type,bItem.cod_value," +
+          "bItem.tracking,bItem.size_id,bItem.size_price,bItem.parcel_type as bi_parcel_type,bItem.zipcode as bi_zipcode,bItem.cod_value," +
           "br.sender_name,br.sender_phone,br.sender_address,br.receiver_name,br.phone,br.receiver_address,d.DISTRICT_CODE," +
-          "br.district_name,a.AMPHUR_CODE,br.amphur_name,p.PROVINCE_CODE,br.province_name,br.zipcode,br.remark," +
+          "br.district_name,a.AMPHUR_CODE,br.amphur_name,p.PROVINCE_CODE,br.province_name,br.zipcode as br_zipcode,br.parcel_type as br_parcel_type,br.remark," +
           "s.location_zone,s.alias_size,gSize.product_id,gSize.product_name,g.GEO_ID,g.GEO_NAME " +
           "FROM billing b " +
           "JOIN billing_item bItem ON b.billing_no=bItem.billing_no " +
@@ -37,7 +191,8 @@ function sendDataToMainServer() {
           "JOIN postinfo_amphur a ON br.amphur_id=a.AMPHUR_ID " +
           "JOIN postinfo_province p ON br.province_id=p.PROVINCE_ID " +
           "JOIN postinfo_geography g ON d.GEO_ID=g.GEO_ID " +
-          "WHERE bItem.billing_no='" + result[r].billing_no + "'";
+          "WHERE bItem.billing_no=?";
+        let billing_no= result[r].billing_no;
 
         connection.query(sqlquery, function (err, data) {
           if (data.length !== 0) {
@@ -76,9 +231,6 @@ function sendDataToMainServer() {
                     custphone: data[j].phone,
                     custzipcode: data[j].zipcode,
                     custaddr: data[j].receiver_address,
-                    //   "custdistrict": data[i].district_name,
-                    //   "custamphur": data[i].amphur_name,
-                    //   "custprovince": data[i].province_name,
                     ordershortnote: '',
                     districtcode: data[j].DISTRICT_CODE,
                     amphercode: data[j].AMPHUR_CODE,
@@ -109,8 +261,6 @@ function sendDataToMainServer() {
                   orderlist: orderlist
                 }
               }
-              // console.log(JSON.stringify(dataAll));
-
               request(
                 {
                   url:
@@ -125,8 +275,6 @@ function sendDataToMainServer() {
                 },
                 (err, res, body) => {
                   if (res) {
-                    // console.log('billing_no',data[0].billing_no);
-                    // console.log('response',res.body); 
                     if (res.body.checkpass == 'pass' && res.body.bill_no == 'data_varidated_pass') {
                       let updateBilling = "UPDATE billing SET status='" + res.body.checkpass + "' WHERE billing_no='" + data[0].billing_no + "'"
                       connection.query(updateBilling, function (err, dataBilling) { })
@@ -138,7 +286,6 @@ function sendDataToMainServer() {
                         var dateTimeString = moment(new Date).format("YYYY-MM-DD HH:mm:ss", true);
                         updateServices.updateStatusReceiverInfo(tracking, status, dateTimeString).then(function (data) { })
                       }
-                      // console.log("bill_no finish",data[0].billing_no);
                     }
                   }
                 })
@@ -150,6 +297,7 @@ function sendDataToMainServer() {
     }
   })
 }
+
 // })
 // cron.schedule('1-5 * * * *', () => {
 function pushCaptureData() {
@@ -295,7 +443,8 @@ function pushReceiverTempToReceiverInfo() {
     }
   })
 }
-setInterval(sendDataToMainServer, 15000);
+
+// setInterval(sendDataToMainServer, 15000);
 // setInterval(pushCaptureData, 3000);
 // setInterval(pushKeyInData, 10000);
 // setInterval(pushReceiverTempToReceiverInfo, 5000);
