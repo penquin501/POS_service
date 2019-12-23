@@ -128,13 +128,13 @@ function sendDataToMainServerTemp(dataAuthen, dataBill) {
 
 var t = 0;
 let t_format = 'HH:mm:ss.SSS';
-var sim_execute_time = 1000;
+var sim_execute_time = 60000;
 var execute_interval = 5 * 1000;
-var hot_delay = 100;
+var hot_delay = 1000;
 var task_number = 0;
 
 myFunction = async (t) => {
-  let tid = t;
+  let tid = 0;
   console.log("%s   Start execute myFunction(%d)", m().format(t_format), tid);
   console.log("%s     process about %ds", m().format(t_format), sim_execute_time);
   //---------------
