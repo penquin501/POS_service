@@ -139,7 +139,7 @@ module.exports = bus2 => {
         request(
           {
             url:
-              "https://dev.945holding.com/webservice/restful/parcel/order_record/v11/data",
+              "https://www.945holding.com/webservice/restful/parcel/order_record/v11/data",
             method: "POST",
             body: msg,
             json: true,
