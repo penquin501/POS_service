@@ -16,7 +16,7 @@ const connection = require("./env/db");
 const billing_connection = require("./env/mainDB");
 
 const updateServices = require('./services/updateService.js');
-require('./events/verify.js')(bus);
+require('./events/pending.js')(bus);
 
 app.get("/senddata", function (req, res) {
   // res.json({ 'hello': 'World' });
@@ -128,21 +128,19 @@ function sendDataToMainServerTemp(dataAuthen, dataBill) {
 
 var t = 0;
 let t_format = 'HH:mm:ss.SSS';
-var sim_execute_time = 60000;
-var execute_interval = 5 * 1000;
+// var sim_execute_time = 60000;
+var execute_interval = 10 * 1000;
 var hot_delay = 1000;
 var task_number = 0;
 
 myFunction = async (t) => {
-  let tid = 0;
-  console.log("%s   Start execute myFunction(%d)", m().format(t_format), tid);
-  console.log("%s     process about %ds", m().format(t_format), sim_execute_time);
+  console.log("%s   Start execute myFunction", m().format(t_format));
+  // console.log("%s     process about %ds", m().format(t_format), sim_execute_time);
   //---------------
     await updateServices.selectBillingNotSend().then(function (listBilling) { 
       if(listBilling!==null) {
         for(i=0;i<listBilling.length;i++) {
           value={
-            connection: connection,
             billingNo: listBilling[i].billing_no
           }
             bus.emit('set_pending',value);
@@ -153,8 +151,8 @@ myFunction = async (t) => {
 
   //---------------
   console.log("%s     process return", m().format(t_format));
-  console.log("%s   End execute myFunction(%d)", m().format(t_format), tid);
-  sim_execute_time += 500;
+  console.log("%s   End execute myFunction", m().format(t_format));
+  // sim_execute_time += 500;
 }
 
 task4  = async () => {

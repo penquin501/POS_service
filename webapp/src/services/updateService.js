@@ -4,9 +4,9 @@ const request = require('request');
 const moment = require('moment');
 
 const events = require('events');
-const bus2 = new events.EventEmitter();
+const bus = new events.EventEmitter();
 
-require('../events/format.js')(bus2);
+require('../events/verify')(bus);
 
 moment.locale('th')
 
@@ -94,7 +94,7 @@ module.exports = {
         let data=[status,billingNo];
         return new Promise(function (resolve, reject) {
             connection.query(updateBilling, data, (err, results) => {
-                bus2.emit("verify", billingNo);
+                bus.emit("verify", billingNo);
             });
         });
     },
