@@ -3,7 +3,7 @@ const updateServices = require("../services/updateService.js");
 const events = require('events');
 const bus2 = new events.EventEmitter();
 
-require('./format.js')(bus2);
+require('./sendApi.js')(bus2);
 
 module.exports = bus => {
   bus.on("set_pending", msg => {

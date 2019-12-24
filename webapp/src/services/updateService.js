@@ -7,6 +7,7 @@ const events = require('events');
 const bus = new events.EventEmitter();
 
 require('../events/verify')(bus);
+// require('../events/sendApi')(bus2);
 
 moment.locale('th')
 
@@ -24,7 +25,7 @@ module.exports = {
         })
     },
     selectBillingNotSend: () => {
-        var sqlBillingNotSend = "SELECT billing_no FROM billing WHERE status is null";
+        var sqlBillingNotSend = "SELECT billing_no FROM billing WHERE status is null LIMIT 1";
         return new Promise(function (resolve, reject) {
             connection.query(sqlBillingNotSend, (error, results, fields) => {
                 resolve(results);
@@ -95,6 +96,19 @@ module.exports = {
         return new Promise(function (resolve, reject) {
             connection.query(updateBilling, data, (err, results) => {
                 bus.emit("verify", billingNo);
+            });
+        });
+    },
+    prepareRawData: () => {
+        let selectJson = "SELECT prepare_raw_data,billing_no FROM billing WHERE status = 'pending' AND prepare_raw_data is not null LIMIT 1"
+        // let data=[status,billingNo];
+        return new Promise(function (resolve, reject) {
+            connection.query(selectJson, (err, results) => {
+                if(results==null){
+               resolve(false);
+            } else {
+                resolve(results);
+            }
             });
         });
     },

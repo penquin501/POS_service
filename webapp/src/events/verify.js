@@ -3,7 +3,7 @@ const connection = require("../env/db");
 const events = require('events');
 const bus2 = new events.EventEmitter();
 
-require('./format.js')(bus2);
+require('./sendApi.js')(bus2);
 
 module.exports = bus => {
   bus.on("verify", msg => {
@@ -63,7 +63,7 @@ module.exports = bus => {
         }
       }
       if (check_pass) {
-        bus2.emit("set_json_format", data);
+        bus.emit("set_json_format", data);
       }
     });
     var dataLog = {
@@ -73,5 +73,84 @@ module.exports = bus => {
     bus2.emit("save_to_log", dataLog);
   });
 
+  bus.on("set_json_format", msg => {
+    // console.log("set_json_format", msg);
+    var data = msg;
+    var orderlist = [];
+    var paymentType = "";
+    for (j = 0; j < data.length; j++) {
+      if (data[j].bi_parcel_type == "NORMAL") {
+        paymentType = "99";
+      } else {
+        paymentType = "60";
+      }
+
+      if (data[j].sender_address == null) {
+        sender_address = "-";
+      } else {
+        sender_address = data[j].sender_address;
+      }
+
+      dataDes = {
+        productinfo: {
+          globalproductid: data[j].product_id,
+          productname: data[j].product_name,
+          methodtype: data[j].bi_parcel_type.toUpperCase(),
+          paymenttype: paymentType,
+          price: data[j].size_price.toString(),
+          codvalue: data[j].cod_value.toString()
+        },
+        destinationinfo: {
+          custname: data[j].receiver_name,
+          custphone: data[j].phone,
+          custzipcode: data[j].br_zipcode,
+          custaddr: data[j].receiver_address,
+          ordershortnote: "",
+          districtcode: data[j].DISTRICT_CODE,
+          amphercode: data[j].AMPHUR_CODE,
+          provincecode: data[j].PROVINCE_CODE,
+          geoid: data[j].GEO_ID,
+          geoname: data[j].GEO_NAME,
+          sendername: data[j].sender_name,
+          senderphone: data[j].sender_phone,
+          senderaddr: sender_address
+        },
+        consignmentno: data[j].tracking
+      };
+      orderlist.push(dataDes);
+    }
+    var dataAll = {
+      authen: {
+        merid: data[0].branch_id,
+        userid: data[0].user_id,
+        merauthenlevel: data[0].mer_authen_level
+      },
+      memberparcel: {
+        memberinfo: {
+          memberid: data[0].member_code,
+          courierpid: data[0].carrier_id,
+          courierimage: data[0].img_url
+        },
+        billingno: data[0].billing_no,
+        orderlist: orderlist
+      }
+    };
+    // console.log("data to send", dataAll);
+    var dataLog = {
+      status: "set JSON format",
+      billingNo: data[0].billing_no
+    };
+    bus2.emit("save_to_log", dataLog);
+    bus.emit("save_raw_data", dataAll);
+    // bus2.emit("send_to_api", dataAll);
+  });
   
+  bus.on("save_raw_data", msg => {
+    console.log("save_raw_data", msg.memberparcel.billingno);
+    billingNo = msg.memberparcel.billingno;
+    let sqlSaveJson =
+      "UPDATE billing SET prepare_raw_data=? WHERE billing_no=?";
+    let data = [JSON.stringify(msg),billingNo];
+    connection.query(sqlSaveJson, data, function (err, result) { });
+  });
 };
