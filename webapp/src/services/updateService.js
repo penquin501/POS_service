@@ -100,10 +100,11 @@ module.exports = {
         });
     },
     prepareRawData: () => {
-        let selectJson = "SELECT prepare_raw_data,billing_no FROM billing WHERE status = 'pending' AND prepare_raw_data is not null LIMIT 1"
-        // let data=[status,billingNo];
+
+        let selectJson = "SELECT prepare_raw_data,billing_no FROM billing WHERE status = ? AND prepare_raw_data is not null LIMIT 1"
+        let data=['pending'];
         return new Promise(function (resolve, reject) {
-            connection.query(selectJson, (err, results) => {
+            connection.query(selectJson,data, (err, results) => {
                 if(results==null){
                resolve(false);
             } else {

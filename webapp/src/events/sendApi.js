@@ -8,12 +8,12 @@ module.exports = bus2 => {
     request(
       {
         url:
-          "https://dev.945holding.com/webservice/restful/parcel/order_record/v11/data",
+          "https://dev.945holding.com/webservice/restful/parcel/order_record/v11/json_data",
         method: "POST",
         body: msg.rawData,
         json: true,
         headers: {
-          apikey: "XbOiHrrpH8aQXObcWj69XAom1b0ac5eda2b",
+          // apikey: "XbOiHrrpH8aQXObcWj69XAom1b0ac5eda2b",
           "Content-Type": "application/json"
         }
       },
@@ -30,7 +30,7 @@ module.exports = bus2 => {
   });
 
   bus2.on("response_from_main", msg => {
-    console.log("response_from_main",msg.billingNo);
+    console.log("response_from_main",msg.dataResponse);
     if (msg.dataResponse.body.checkpass == "pass" && msg.dataResponse.body.bill_no == "data_varidated_pass") {
       dataSuccess = {
         billingNo: msg.billingNo,
@@ -87,7 +87,7 @@ module.exports = bus2 => {
     };
 
     let updateBilling = "UPDATE billing SET status=? WHERE billing_no=?";
-    let dataUpdateBilling = [status, billingNo];
+    let dataUpdateBilling = [status, msg.billingNo];
     connection.query(updateBilling, dataUpdateBilling, function (err,dataBilling) { });
 
     bus2.emit("save_to_log", dataLog);
