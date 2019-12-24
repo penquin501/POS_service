@@ -10,7 +10,7 @@ module.exports = bus => {
     billingNo = msg;
 
     var sqlBilling =
-      "SELECT user_id,mer_authen_level,member_code,carrier_id,billing_no,branch_id,total,img_url FROM billing WHERE billing_no= ?";
+      "SELECT user_id,mer_authen_level,member_code,carrier_id,billing_no,branch_id,img_url FROM billing WHERE billing_no= ?";
     var dataBilling = [billingNo];
 
     let sqlBillingItem =
@@ -29,41 +29,28 @@ module.exports = bus => {
       "WHERE bItem.billing_no=?";
     var dataBillItem = [billingNo];
 
-    connection.query(sqlBilling, dataBilling, function(err, resultBilling) {
+    connection.query(sqlBilling, dataBilling, function (err, resultBilling) {
       if (resultBilling.length > 0) {
-        connection.query(
-          sqlBillingItem,
-          dataBillItem,
-          (err, resultBillingItem) => {
-            
-            if (resultBillingItem.length > 0) {
-              var check_pass = true;
-              for (i = 0; i < resultBillingItem.length; i++) {
-                if (
-                  resultBilling[0].user_id === null ||
-                  resultBilling[0].mer_authen_level === null ||
-                  resultBilling[0].member_code === null ||
-                  resultBilling[0].carrier_id === null ||
-                  resultBilling[0].billing_no === null ||
-                  resultBilling[0].branch_id === null
-                ) {
-                  check_pass = false;
-                } else if (
-                  resultBillingItem[i].bi_parcel_type === null ||
-                  resultBillingItem[i].size_price === null ||
-                  resultBillingItem[i].receiver_name === null ||
-                  resultBillingItem[i].phone === null ||
-                  resultBillingItem[i].receiver_address === null ||
-                  resultBillingItem[i].DISTRICT_CODE === null ||
-                  resultBillingItem[i].AMPHUR_CODE === null ||
-                  resultBillingItem[i].PROVINCE_CODE === null ||
-                  resultBillingItem[i].br_zipcode === null ||
-                  resultBillingItem[i].product_id === null ||
-                  resultBillingItem[i].product_name === null ||
-                  resultBillingItem[i].GEO_ID === null ||
-                  resultBillingItem[i].tracking === null
-                ) {
-                  check_pass = false;
+        connection.query(sqlBillingItem, dataBillItem, (err, resultBillingItem) => {
+          if (resultBillingItem.length > 0) {
+            var check_pass_item;
+            for (i = 0; i < resultBillingItem.length; i++) {
+              if (
+                resultBillingItem[i].bi_parcel_type !== null &&
+                resultBillingItem[i].size_price !== null &&
+                resultBillingItem[i].receiver_name !== null &&
+                resultBillingItem[i].phone !== null &&
+                resultBillingItem[i].receiver_address !== null &&
+                resultBillingItem[i].DISTRICT_CODE !== null &&
+                resultBillingItem[i].AMPHUR_CODE !== null &&
+                resultBillingItem[i].PROVINCE_CODE !== null &&
+                resultBillingItem[i].br_zipcode !== null &&
+                resultBillingItem[i].product_id !== null &&
+                resultBillingItem[i].product_name !== null &&
+                resultBillingItem[i].GEO_ID !== null &&
+                resultBillingItem[i].tracking !== null
+              ) {
+                check_pass_item = true;
                 // } else if (
                 //   resultBillingItem[i].bi_parcel_type !==
                 //     resultBillingItem[i].br_parcel_type ||
@@ -71,21 +58,29 @@ module.exports = bus => {
                 //     resultBillingItem[i].br_zipcode
                 // ) {
                 //   check_pass = false;
-                } else {
-                  check_pass = true;
-                }
+              } else {
+                check_pass_item = false;
               }
-              console.log(check_pass);
             }
-            
-            if (check_pass) {
-              var dataResult = {
-                billingInfo: resultBilling,
-                billingItem: resultBillingItem
-              };
-              bus.emit("set_json_format", dataResult);
+            var check_pass
+            if (resultBilling[0].user_id !== null && resultBilling[0].mer_authen_level !== null && resultBilling[0].member_code !== null && resultBilling[0].carrier_id !== null && resultBilling[0].img_url !== null && resultBilling[0].branch_id !== null && resultBilling[0].billing_no !== null) {
+              check_pass = true
+            } else {
+              check_pass = false
             }
+            // console.log("%s    %s",check_pass_item,check_pass);
           }
+
+          if (check_pass && check_pass_item) {
+            var dataResult = {
+              billingInfo: resultBilling,
+              billingItem: resultBillingItem
+            };
+            bus.emit("set_json_format", dataResult);
+          } else {
+            bus.emit("update_status_to_null", billingNo);
+          }
+        }
         );
       }
     });
@@ -170,9 +165,16 @@ module.exports = bus => {
   bus.on("save_raw_data", msg => {
     console.log("save_raw_data", msg.memberparcel.billingno);
     billingNo = msg.memberparcel.billingno;
-    let sqlSaveJson =
-      "UPDATE billing SET prepare_raw_data=? WHERE billing_no=?";
+    let sqlSaveJson = "UPDATE billing SET prepare_raw_data=? WHERE billing_no=?";
     let data = [JSON.stringify(msg), billingNo];
-    connection.query(sqlSaveJson, data, function(err, result) {});
+    connection.query(sqlSaveJson, data, function (err, result) { });
+  });
+
+  bus.on("update_status_to_null", msg => {
+    console.log("save_raw_data", msg);
+    billingNo = msg;
+    let sqlUpdateStatus = "UPDATE billing SET status=? WHERE billing_no=?";
+    let data = [null, billingNo];
+    connection.query(sqlUpdateStatus, data, function (err, result) { });
   });
 };
