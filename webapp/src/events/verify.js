@@ -1,81 +1,101 @@
-
 const connection = require("../env/db");
-const events = require('events');
+const events = require("events");
 const bus2 = new events.EventEmitter();
 
-require('./sendApi.js')(bus2);
+require("./sendApi.js")(bus2);
 
 module.exports = bus => {
   bus.on("verify", msg => {
     console.log("verify", msg);
     billingNo = msg;
 
-    let sqlquery =
-      "SELECT b.user_id,b.mer_authen_level,b.member_code,b.carrier_id,b.billing_no,b.branch_id,b.total,b.img_url," +
-      "bItem.tracking,bItem.size_id,bItem.size_price,bItem.parcel_type as bi_parcel_type,bItem.zipcode as bi_zipcode,bItem.cod_value," +
-      "br.sender_name,br.sender_phone,br.sender_address,br.receiver_name,br.phone,br.receiver_address,d.DISTRICT_CODE," +
-      "br.district_name,a.AMPHUR_CODE,br.amphur_name,p.PROVINCE_CODE,br.province_name,br.zipcode as br_zipcode,br.parcel_type as br_parcel_type,br.remark," +
-      "s.location_zone,s.alias_size,gSize.product_id,gSize.product_name,g.GEO_ID,g.GEO_NAME " +
-      "FROM billing b " +
-      "JOIN billing_item bItem ON b.billing_no=bItem.billing_no " +
-      "JOIN billing_receiver_info br ON bItem.tracking=br.tracking " +
-      "JOIN size_info s ON s.size_id=bItem.size_id " +
-      "JOIN global_parcel_size gSize ON s.location_zone = gSize.area AND s.alias_size =gSize.alias_name AND bItem.parcel_type= gSize.type " +
-      "JOIN postinfo_district d ON br.district_id=d.DISTRICT_ID and br.amphur_id=d.AMPHUR_ID and br.province_id=d.PROVINCE_ID " +
-      "JOIN postinfo_amphur a ON br.amphur_id=a.AMPHUR_ID " +
-      "JOIN postinfo_province p ON br.province_id=p.PROVINCE_ID " +
-      "JOIN postinfo_geography g ON d.GEO_ID=g.GEO_ID " +
-      "WHERE bItem.billing_no=?";
-    let dataBill = [billingNo];
+    var sqlBilling =
+      "SELECT user_id,mer_authen_level,member_code,carrier_id,billing_no,branch_id,total,img_url FROM billing WHERE billing_no= ?";
+    var dataBilling = [billingNo];
 
-    connection.query(sqlquery, dataBill, function(err, data) {
-      var check_pass;
-      for (i = 0; i < data.length; i++) {
-        if (
-          !data[i].user_id ||
-          !data[i].mer_authen_level ||
-          !data[i].member_code ||
-          !data[i].carrier_id ||
-          !data[i].branch_id ||
-          !data[i].img_url ||
-          !data[i].bi_parcel_type ||
-          !data[i].size_price ||
-          !data[i].receiver_name ||
-          !data[i].phone ||
-          !data[i].receiver_address ||
-          !data[i].DISTRICT_CODE ||
-          !data[i].AMPHUR_CODE ||
-          !data[i].PROVINCE_CODE ||
-          !data[i].br_zipcode ||
-          !data[i].product_id ||
-          !data[i].product_name ||
-          !data[i].GEO_ID ||
-          !data[i].tracking
-        ) {
-          check_pass = false;
-        } else if (
-          data[i].bi_parcel_type != data[i].br_parcel_type ||
-          data[i].bi_zipcode != data[i].br_zipcode
-        ) {
-          check_pass = false;
-        } else {
-          check_pass = true;
-        }
-      }
-      if (check_pass) {
-        bus.emit("set_json_format", data);
+    let sqlBillingItem =
+      "SELECT bItem.tracking,bItem.size_id,bItem.size_price,bItem.parcel_type as bi_parcel_type,bItem.zipcode as bi_zipcode,bItem.cod_value," +
+      "br.sender_name,br.sender_phone,br.sender_address,br.receiver_name,br.phone,br.receiver_address,d.DISTRICT_CODE," +
+      "br.district_name,a.AMPHUR_CODE,br.amphur_name,p.PROVINCE_CODE,br.province_name,br.parcel_type as br_parcel_type,br.zipcode as br_zipcode,br.remark," +
+      "s.location_zone,s.alias_size,gSize.product_id,gSize.product_name,g.GEO_ID,g.GEO_NAME " +
+      "FROM billing_item bItem " +
+      "LEFT JOIN billing_receiver_info br ON bItem.tracking=br.tracking " +
+      "LEFT JOIN size_info s ON bItem.size_id=s.size_id " +
+      "LEFT JOIN global_parcel_size gSize ON s.location_zone = gSize.area AND s.alias_size =gSize.alias_name AND bItem.parcel_type= gSize.type " +
+      "LEFT JOIN postinfo_district d ON br.district_id=d.DISTRICT_ID and br.amphur_id=d.AMPHUR_ID and br.province_id=d.PROVINCE_ID " +
+      "LEFT JOIN postinfo_amphur a ON br.amphur_id=a.AMPHUR_ID " +
+      "LEFT JOIN postinfo_province p ON br.province_id=p.PROVINCE_ID " +
+      "LEFT JOIN postinfo_geography g ON d.GEO_ID=g.GEO_ID " +
+      "WHERE bItem.billing_no=?";
+    var dataBillItem = [billingNo];
+
+    connection.query(sqlBilling, dataBilling, function(err, resultBilling) {
+      if (resultBilling.length > 0) {
+        connection.query(
+          sqlBillingItem,
+          dataBillItem,
+          (err, resultBillingItem) => {
+            
+            if (resultBillingItem.length > 0) {
+              var check_pass = true;
+              for (i = 0; i < resultBillingItem.length; i++) {
+                if (
+                  resultBilling[0].user_id === null ||
+                  resultBilling[0].mer_authen_level === null ||
+                  resultBilling[0].member_code === null ||
+                  resultBilling[0].carrier_id === null ||
+                  resultBilling[0].billing_no === null ||
+                  resultBilling[0].branch_id === null
+                ) {
+                  check_pass = false;
+                } else if (
+                  resultBillingItem[i].bi_parcel_type === null ||
+                  resultBillingItem[i].size_price === null ||
+                  resultBillingItem[i].receiver_name === null ||
+                  resultBillingItem[i].phone === null ||
+                  resultBillingItem[i].receiver_address === null ||
+                  resultBillingItem[i].DISTRICT_CODE === null ||
+                  resultBillingItem[i].AMPHUR_CODE === null ||
+                  resultBillingItem[i].PROVINCE_CODE === null ||
+                  resultBillingItem[i].br_zipcode === null ||
+                  resultBillingItem[i].product_id === null ||
+                  resultBillingItem[i].product_name === null ||
+                  resultBillingItem[i].GEO_ID === null ||
+                  resultBillingItem[i].tracking === null
+                ) {
+                  check_pass = false;
+                // } else if (
+                //   resultBillingItem[i].bi_parcel_type !==
+                //     resultBillingItem[i].br_parcel_type ||
+                //   resultBillingItem[i].bi_zipcode !==
+                //     resultBillingItem[i].br_zipcode
+                // ) {
+                //   check_pass = false;
+                } else {
+                  check_pass = true;
+                }
+              }
+              console.log(check_pass);
+            }
+            
+            if (check_pass) {
+              var dataResult = {
+                billingInfo: resultBilling,
+                billingItem: resultBillingItem
+              };
+              bus.emit("set_json_format", dataResult);
+            }
+          }
+        );
       }
     });
-    var dataLog = {
-      status: "verify",
-      billingNo: billingNo
-    };
-    bus2.emit("save_to_log", dataLog);
   });
 
   bus.on("set_json_format", msg => {
     // console.log("set_json_format", msg);
-    var data = msg;
+    var billingInfo = msg.billingInfo;
+    var data = msg.billingItem;
+
     var orderlist = [];
     var paymentType = "";
     for (j = 0; j < data.length; j++) {
@@ -119,20 +139,21 @@ module.exports = bus => {
       };
       orderlist.push(dataDes);
     }
+    // console.log("orderlist",orderlist);
     var dataAll = {
       apikey: "XbOiHrrpH8aQXObcWj69XAom1b0ac5eda2b",
       authen: {
-        merid: data[0].branch_id,
-        userid: data[0].user_id,
-        merauthenlevel: data[0].mer_authen_level
+        merid: billingInfo[0].branch_id,
+        userid: billingInfo[0].user_id,
+        merauthenlevel: billingInfo[0].mer_authen_level
       },
       memberparcel: {
         memberinfo: {
-          memberid: data[0].member_code,
-          courierpid: data[0].carrier_id,
-          courierimage: data[0].img_url
+          memberid: billingInfo[0].member_code,
+          courierpid: billingInfo[0].carrier_id,
+          courierimage: billingInfo[0].img_url
         },
-        billingno: data[0].billing_no,
+        billingno: billingInfo[0].billing_no,
         orderlist: orderlist
       }
     };
@@ -145,13 +166,13 @@ module.exports = bus => {
     bus.emit("save_raw_data", dataAll);
     // bus2.emit("send_to_api", dataAll);
   });
-  
+
   bus.on("save_raw_data", msg => {
     console.log("save_raw_data", msg.memberparcel.billingno);
     billingNo = msg.memberparcel.billingno;
     let sqlSaveJson =
       "UPDATE billing SET prepare_raw_data=? WHERE billing_no=?";
-    let data = [JSON.stringify(msg),billingNo];
-    connection.query(sqlSaveJson, data, function (err, result) { });
+    let data = [JSON.stringify(msg), billingNo];
+    connection.query(sqlSaveJson, data, function(err, result) {});
   });
 };

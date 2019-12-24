@@ -4,16 +4,16 @@ const connection = require("../env/db");
 module.exports = bus2 => {
 
   bus2.on("send_to_api", msg => {
-    console.log("set_json_format", msg.billingNo);
+    console.log("send_to_api", msg.billingNo);
     request(
       {
         url:
           "https://dev.945holding.com/webservice/restful/parcel/order_record/v11/json_data",
         method: "POST",
         body: msg.rawData,
-        json: true,
+        // json: true,
         headers: {
-          // apikey: "XbOiHrrpH8aQXObcWj69XAom1b0ac5eda2b",
+          apikey: "XbOiHrrpH8aQXObcWj69XAom1b0ac5eda2b",
           "Content-Type": "application/json"
         }
       },
@@ -31,19 +31,19 @@ module.exports = bus2 => {
 
   bus2.on("response_from_main", msg => {
     console.log("response_from_main",msg.dataResponse);
-    if (msg.dataResponse.body.checkpass == "pass" && msg.dataResponse.body.bill_no == "data_varidated_pass") {
-      dataSuccess = {
-        billingNo: msg.billingNo,
-        dataResponse: msg.dataResponse.body
-      };
-      bus2.emit("response_success", dataSuccess);
-    } else {
-      dataError = {
-        billingNo: msg.billingNo,
-        dataResponse: msg.dataResponse
-      };
-      bus2.emit("response_error", dataError);
-    } 
+    // if (msg.dataResponse.body.checkpass == "pass" && msg.dataResponse.body.bill_no == "data_varidated_pass") {
+    //   dataSuccess = {
+    //     billingNo: msg.billingNo,
+    //     dataResponse: msg.dataResponse.body
+    //   };
+    //   bus2.emit("response_success", dataSuccess);
+    // } else {
+    //   dataError = {   
+    //     billingNo: msg.billingNo,
+    //     dataResponse: msg.dataResponse
+    //   };
+    //   bus2.emit("response_error", dataError);
+    // } 
   });
   
   bus2.on("response_success", msg => {
