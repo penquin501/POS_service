@@ -178,7 +178,7 @@ task1 = async () => {
   console.log("%s Delay Time = %d", m().format(t_format), delay_time);
   setTimeout(task1, delay_time);
 };
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 sendApi = async t => {
   console.log("%s   Start execute sendApi", m().format(t_format));
   // console.log("%s     process about %ds", m().format(t_format), sim_execute_time);
@@ -189,7 +189,7 @@ sendApi = async t => {
         billingNo: data[0].billing_no,
         rawData: data[0].prepare_raw_data
       };
-      bus2.emit("send_to_api", value);
+      bus2.emit("update_status_to_waiting", value);
     }
   });
 
