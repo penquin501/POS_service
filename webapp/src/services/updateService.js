@@ -14,29 +14,20 @@ moment.locale("th");
 module.exports = {
   updateStatusReceiverInfo: (tracking, status, dateTimeString) => {
     return new Promise(function(resolve, reject) {
-      let sql =
-        "SELECT status FROM billing_receiver_info where tracking='" +
-        tracking +
-        "'";
-      connection.query(sql, (error, results, fields) => {
-        // resolve(results);
+      let sql ="SELECT status FROM billing_receiver_info where tracking=?";
+      let data=[tracking]
+      connection.query(sql,data, (error, results, fields) => {
         if (results[0].status != "success") {
-          let updateReceiverInfo =
-            "UPDATE billing_receiver_info SET status='" +
-            status +
-            "',sending_date='" +
-            dateTimeString +
-            "' WHERE tracking='" +
-            tracking +
-            "'";
-          connection.query(updateReceiverInfo, function(err, data) {});
+          let updateReceiverInfo ="UPDATE billing_receiver_info SET status=?,sending_date=? WHERE tracking=?";
+          let dataReceiverInfo=[status,dateTimeString,tracking];
+          connection.query(updateReceiverInfo, dataReceiverInfo,function(err, data) {});
         }
       });
     });
   },
   selectBillingNotSend: () => {
     var sqlBillingNotSend =
-      "SELECT billing_no FROM billing WHERE status is null";
+      "SELECT billing_no FROM billing_test WHERE status is null";
     return new Promise(function(resolve, reject) {
       connection.query(sqlBillingNotSend, (error, results, fields) => {
         resolve(results);
@@ -68,38 +59,11 @@ module.exports = {
         if (!resultBilling) {
           resolve(false);
         } else {
-          connection.query(
-            sqlBillingItem,
-            dataBillItem,
-            (err, resultBillingItem) => {
-              // if (!resultBillingItem) {
-              //     resolve(false)
-              // } else {
-              //     var check_pass
-              //     for (i = 0; i < resultBillingItem.length; i++) {
-              //         if(!resultBilling[0].user_id ||!resultBilling[0].mer_authen_level ||!resultBilling[0].member_code||
-              //             !resultBilling[0].carrier_id||!resultBilling[0].billing_no||!resultBilling[0].branch_id){
-              //             check_pass = false;
-              //         } else if (!resultBillingItem[i].bi_parcel_type || !resultBillingItem[i].size_price || !resultBillingItem[i].receiver_name ||
-              //             !resultBillingItem[i].phone || !resultBillingItem[i].receiver_address || !resultBillingItem[i].DISTRICT_CODE ||
-              //             !resultBillingItem[i].AMPHUR_CODE || !resultBillingItem[i].PROVINCE_CODE || !resultBillingItem[i].br_zipcode ||
-              //             !resultBillingItem[i].product_id || !resultBillingItem[i].product_name || !resultBillingItem[i].GEO_ID || !resultBillingItem[i].tracking
-              //         ) {
-              //             check_pass = false;
-              //         } else if(resultBillingItem[i].bi_parcel_type!=resultBillingItem[i].br_parcel_type || resultBillingItem[i].bi_zipcode!=resultBillingItem[i].br_zipcode){
-              //             check_pass = false;
-              //         } else {
-              //             check_pass = true;
-              //         }
-              //     }
-              //     if (check_pass) {
+          connection.query(sqlBillingItem,dataBillItem,(err, resultBillingItem) => {
               var dataResult = {
                 billingInfo: resultBilling,
                 billingItem: resultBillingItem
               };
-              //         resolve(dataResult);
-              //     }
-              // }
               resolve(dataResult);
             }
           );
@@ -108,7 +72,7 @@ module.exports = {
     });
   },
   updatePending: (status, billingNo) => {
-    let updateBilling = "UPDATE billing SET status=? WHERE billing_no=?";
+    let updateBilling = "UPDATE billing_test SET status=? WHERE billing_no=?";
     let data = [status, billingNo];
     return new Promise(function(resolve, reject) {
       connection.query(updateBilling, data, (err, results) => {

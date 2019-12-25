@@ -55,97 +55,7 @@ function sendDataToMainServerTemp(dataAuthen, dataBill) {
     }
     console.log(check_pass);
   });
-    // var data = res.billingItem;
-    // // console.log(data[0]);
-    // for (i = 0; i < data.length; i++) {
-    //   // "paymenttype": "99",99=normal,60=cod
-    //   if (data[i].bi_parcel_type.toUpperCase() == "NORMAL") {
-    //     paymentType = "99";
-    //   } else {
-    //     paymentType = "60";
-    //   }
-    //   dataDes = {
-    //     productinfo: {
-    //       globalproductid: data[i].product_id,
-    //       productname: data[i].product_name,
-    //       methodtype: data[i].bi_parcel_type.toUpperCase(),
-    //       paymenttype: paymentType,
-    //       price: data[i].size_price.toString(),
-    //       codvalue: data[i].cod_value.toString()
-    //     },
-    //     destinationinfo: {
-    //       custname: data[i].receiver_name,
-    //       custphone: data[i].phone,
-    //       custzipcode: data[i].br_zipcode,
-    //       custaddr: data[i].receiver_address,
-    //       //   "custdistrict": data[i].district_name,
-    //       //   "custamphur": data[i].amphur_name,
-    //       //   "custprovince": data[i].province_name,
-    //       ordershortnote: data[i].remark,
-    //       districtcode: data[i].DISTRICT_CODE,
-    //       amphercode: data[i].AMPHUR_CODE,
-    //       provincecode: data[i].PROVINCE_CODE,
-    //       geoid: data[i].GEO_ID,
-    //       geoname: data[i].GEO_NAME,
-    //       sendername: data[i].sender_name,
-    //       senderphone: data[i].sender_phone,
-    //       senderaddr: data[i].sender_address
-    //     },
-    //     consignmentno: data[i].tracking
-    //   };
-    //   orderlist.push(dataDes);
-    // }
-
-    // var dataAll = {
-    //   authen: {
-    //     merid: res.billingInfo[0].branch_id,
-    //     userid: res.billingInfo[0].user_id,
-    //     merauthenlevel: res.billingInfo[0].mer_authen_level
-    //   },
-    //   memberparcel: {
-    //     memberinfo: {
-    //       memberid: res.billingInfo[0].member_code,
-    //       courierpid: res.billingInfo[0].carrier_id,
-    //       courierimage: res.billingInfo[0].img_url
-    //     },
-    //     billingno: res.billingInfo[0].billing_no,
-    //     orderlist: orderlist
-    //   }
-    // };
-    // console.log("dataAll", JSON.stringify(dataAll));
-  //   request(
-  //     {
-  //       url:
-  //         "https://www.945holding.com/webservice/restful/parcel/order_record/v11/data",
-  //       method: "POST",
-  //       body: dataAll,
-  //       json: true,
-  //       headers: {
-  //         apikey: "XbOiHrrpH8aQXObcWj69XAom1b0ac5eda2b",
-  //         "Content-Type": "application/json"
-  //       }
-  //     },
-  //     (err, res2, body) => {
-  //       console.log(res2);
-  //       if (
-  //         res.body.checkpass == "pass" &&
-  //         res.body.bill_no == "data_varidated_pass"
-  //       ) {
-  //         updateServices
-  //           .updateStatusBilling(dataBill.billing_no, res.body.checkpass)
-  //           .then(function(data) {});
-  //         listStatus = res.body.status;
-  //         for (i = 0; i < listStatus.length; i++) {
-  //           var tracking = listStatus[i].consignmentno;
-  //           var status = listStatus[i].status;
-  //           updateServices
-  //             .updateStatusReceiverInfo(tracking, status)
-  //             .then(function(data) {});
-  //         }
-  //       }
-  //     }
-  //   );
-  // });
+    
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////start cron job/////////////////////////////////////////////////////
@@ -172,7 +82,7 @@ setRawData = async t => {
   });
 
   //---------------
-  console.log("%s     process return", m().format(t_format));
+  // console.log("%s     process return", m().format(t_format));
   console.log("%s   End execute setRawData", m().format(t_format));
   // sim_execute_time += 500;
 };
@@ -186,9 +96,9 @@ task1 = async () => {
 
   let end_time = new Date().getTime();
   let actual_execute_time = end_time - start_time;
-  console.log("%s Actual Execute Time = %d",m().format(t_format),actual_execute_time);
+  // console.log("%s Actual Execute Time = %d",m().format(t_format),actual_execute_time);
   let delay_time = Math.max(execute_interval - actual_execute_time, hot_delay);
-  console.log("%s Delay Time = %d", m().format(t_format), delay_time);
+  // console.log("%s Delay Time = %d", m().format(t_format), delay_time);
   setTimeout(task1, delay_time);
 };
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
