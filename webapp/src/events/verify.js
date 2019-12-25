@@ -9,7 +9,7 @@ module.exports = bus => {
     console.log("verify", msg);
     billingNo = msg;
     var sqlBilling =
-      "SELECT user_id,mer_authen_level,member_code,carrier_id,billing_no,branch_id,img_url FROM billing_test WHERE billing_no= ?";
+      "SELECT user_id,mer_authen_level,member_code,carrier_id,billing_no,branch_id,img_url FROM billing WHERE billing_no= ?";
     var dataBilling = [billingNo];
 
     let sqlBillingItem =
@@ -184,7 +184,7 @@ module.exports = bus => {
   bus.on("save_raw_data", msg => {
     console.log("save_raw_data", msg.memberparcel.billingno);
     billingNo = msg.memberparcel.billingno;
-    let sqlSaveJson ="UPDATE billing_test SET prepare_raw_data=? WHERE billing_no=?";
+    let sqlSaveJson ="UPDATE billing SET prepare_raw_data=? WHERE billing_no=?";
     let data = [JSON.stringify(msg), billingNo];
     connection.query(sqlSaveJson, data, function(err, result) {});
   });
@@ -193,7 +193,7 @@ module.exports = bus => {
     console.log("update_status_to_null", msg);
     billingNo = msg;
 
-    let sqlUpdateStatus = "UPDATE billing_test SET status=NULL WHERE billing_no=?";
+    let sqlUpdateStatus = "UPDATE billing SET status=NULL WHERE billing_no=?";
     let data = [billingNo];
 
     connection.query(sqlUpdateStatus, data, function(err, result) {});

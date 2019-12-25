@@ -138,7 +138,7 @@ task2 = async () => {
 };
 main = async () => {
   task1();
-  // task2();
+  task2();
 };
 
 main();
