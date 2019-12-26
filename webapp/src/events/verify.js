@@ -77,15 +77,29 @@ module.exports = bus => {
               }
 
               var check_pass = true;
-              if (
-                resultBilling[0].user_id === null &&
-                resultBilling[0].mer_authen_level === null &&
-                resultBilling[0].member_code === null &&
-                resultBilling[0].carrier_id === null &&
-                resultBilling[0].img_url === null &&
-                resultBilling[0].branch_id === null &&
-                resultBilling[0].billing_no === null
-              ) {
+              
+              if(resultBilling[0].user_id === null){
+                check_pass = false;
+              }
+              if(resultBilling[0].mer_authen_level === null){
+                check_pass = false;
+              }
+              if(resultBilling[0].member_code === null){
+                check_pass = false;
+              }
+              if(resultBilling[0].carrier_id === null){
+                check_pass = false;
+              }
+              if(resultBilling[0].img_url === null){
+                check_pass = false;
+              }
+              if(resultBilling[0].branch_id === null){
+                check_pass = false;
+              }
+              if(resultBilling[0].user_id === null){
+                check_pass = false;
+              }
+              if(resultBilling[0].billing_no === null){
                 check_pass = false;
               }
               console.log("check_pass: %s   check_pass_item: %s      bill_no:%s",check_pass,check_pass_item, resultBilling[0].billing_no);
