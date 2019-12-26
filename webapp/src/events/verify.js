@@ -96,9 +96,6 @@ module.exports = bus => {
               if(resultBilling[0].branch_id === null){
                 check_pass = false;
               }
-              if(resultBilling[0].user_id === null){
-                check_pass = false;
-              }
               if(resultBilling[0].billing_no === null){
                 check_pass = false;
               }
