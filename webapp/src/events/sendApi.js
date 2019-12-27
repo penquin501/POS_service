@@ -11,7 +11,7 @@ module.exports = bus2 => {
 
     let updateBilling = "UPDATE billing SET status=? WHERE billing_no=?";
     let data = ["waiting", msg.billingNo];
-    connection.query(updateBilling, data, function (err, dataBilling) {
+    connection.query(updateBilling, data, function(err, dataBilling) {
       value = {
         billingNo: msg.billingNo,
         rawData: msg.rawData
@@ -21,7 +21,7 @@ module.exports = bus2 => {
   });
 
   bus2.on("send_to_api", msg => {
-    console.log("send_to_api", msg.billingNo)
+    console.log("send_to_api", msg.billingNo);
     var dataLog = {
       status: "send to api",
       billingNo: msg.billingNo
@@ -30,7 +30,8 @@ module.exports = bus2 => {
 
     request(
       {
-        url: "https://dev.945holding.com/webservice/restful/parcel/order_record/v11/json_data",
+        url:
+          "https://dev.945holding.com/webservice/restful/parcel/order_record/v11/json_data",
         method: "POST",
         body: msg.rawData,
         // json: true,
@@ -41,18 +42,26 @@ module.exports = bus2 => {
       },
       (err, res, body) => {
         console.log("%d -----  %s", res.statusCode, res.statusMessage);
-        if (res.statusCode == 200) {
-          var data = {
-            result: res.body,
-            billingNo: msg.billingNo
-          };
-          bus2.emit("response_success", data);
+        if (err === null) {
+          if (res.statusCode == 200) {
+            var data = {
+              result: res.body,
+              billingNo: msg.billingNo
+            };
+            bus2.emit("response_success", data);
+          } else {
+            var data = {
+              result: res,
+              billingNo: msg.billingNo
+            };
+            bus2.emit("response_error", data);
+          }
         } else {
           var data = {
-            result: res,
+            result: err.code,
             billingNo: msg.billingNo
           };
-          bus2.emit("response_error", data);
+          bus2.emit("response_error_code", data);
         }
       }
     );
@@ -63,18 +72,26 @@ module.exports = bus2 => {
     billingNo = msg.billingNo;
     statusResult = JSON.parse(msg.result);
     if (statusResult.checkpass == "pass") {
-      let sqlSelectTracking = "SELECT tracking FROM billing_item WHERE billing_no=?";
+      let sqlSelectTracking =
+        "SELECT tracking FROM billing_item WHERE billing_no=?";
       let dataBilling = [billingNo];
-      connection.query(sqlSelectTracking, dataBilling, function (err, listTracking) {
+      connection.query(sqlSelectTracking, dataBilling, function(
+        err,
+        listTracking
+      ) {
         bus2.emit("update_status_item", { listTracking: listTracking });
       });
       status = statusResult.checkpass;
     } else {
       status = statusResult.checkpass + "-" + statusResult.reason;
     }
-    let updateBilling = "UPDATE billing SET status=?,sending_date=? WHERE billing_no=?";
+    let updateBilling =
+      "UPDATE billing SET status=?,sending_date=? WHERE billing_no=?";
     let dataUpdateBilling = [status, new Date(), billingNo];
-    connection.query(updateBilling, dataUpdateBilling, function (err, dataBilling) { });
+    connection.query(updateBilling, dataUpdateBilling, function(
+      err,
+      dataBilling
+    ) {});
 
     var dataLog = {
       status: status,
@@ -92,10 +109,16 @@ module.exports = bus2 => {
       let sql =
         "UPDATE billing_receiver_info SET status=?,sending_date=? WHERE tracking=?";
       var data = [status, new Date(), tracking];
-      connection.query(sql, data, function (err, dataBillingItem) { });
+      connection.query(sql, data, function(err, dataBillingItem) {});
     }
   });
 
+  bus2.on("response_error_code", msg => {
+    let updateBilling = "UPDATE billing SET status=? WHERE billing_no=?";
+    let dataUpdateBilling = [msg.result, msg.billingNo];
+    connection.query(updateBilling, dataUpdateBilling, function(err,dataBilling) {});
+  });
+  
   bus2.on("response_error", msg => {
     console.log("error", msg.billingNo);
     if (msg.result.body) {
@@ -108,7 +131,7 @@ module.exports = bus2 => {
     }
     let updateBilling = "UPDATE billing SET status=? WHERE billing_no=?";
     let dataUpdateBilling = [status, msg.billingNo];
-    connection.query(updateBilling, dataUpdateBilling, function (err, dataBilling) { });
+    connection.query(updateBilling, dataUpdateBilling, function(err,dataBilling) {});
 
     dataLog = {
       status: status,
@@ -126,6 +149,6 @@ module.exports = bus2 => {
     let sqlLogSendData =
       "INSERT INTO log_send_data(billing_no,record_at, status) VALUES (?,?,?)";
     let data = [billingNo, new Date(), status];
-    connection.query(sqlLogSendData, data, function (err, result) { });
+    connection.query(sqlLogSendData, data, function(err, result) {});
   });
 };
