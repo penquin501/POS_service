@@ -31,7 +31,7 @@ module.exports = bus2 => {
     request(
       {
         url:
-          "https://dev.945holding.com/webservice/restful/parcel/order_record/v11/json_data",
+          "https://www.945holding.com/webservice/restful/parcel/order_record/v11/json_data",
         method: "POST",
         body: msg.rawData,
         // json: true,
@@ -123,15 +123,17 @@ module.exports = bus2 => {
     console.log("error", msg.billingNo);
     if (msg.result.body) {
       desStatus = JSON.parse(msg.result.body);
-      strResCode = JSON.stringify(desStatus.resCode);
-      strDescriptionTH = JSON.stringify(desStatus.descriptionTH);
-      status = strResCode + "-" + strDescriptionTH;
+      // strResCode = JSON.stringify(desStatus.resCode);
+      // strDescriptionTH = JSON.stringify(desStatus.descriptionTH);
+      strCheckpass=desStatus.checkpass;
+      strReason=desStatus.reason;
+      status = strCheckpass + "-" + strReason;
     } else {
       status = msg.result.statusCode + "-" + msg.result.statusMessage;
     }
     let updateBilling = "UPDATE billing SET status=? WHERE billing_no=?";
     let dataUpdateBilling = [status, msg.billingNo];
-    connection.query(updateBilling, dataUpdateBilling, function(err,dataBilling) {});
+    connection.query(updateBilling, dataUpdateBilling, function (err, dataBilling) { });
 
     dataLog = {
       status: status,
