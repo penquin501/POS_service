@@ -13,10 +13,10 @@ module.exports = bus => {
     var dataBilling = [billingNo];
 
     let sqlBillingItem =
-      "SELECT bItem.tracking,bItem.size_id,bItem.size_price,bItem.parcel_type as bi_parcel_type,bItem.zipcode as bi_zipcode,bItem.cod_value," +
+      "SELECT bItem.tracking,bItem.size_price,bItem.parcel_type as bi_parcel_type,bItem.zipcode as bi_zipcode,bItem.cod_value," +
       "br.sender_name,br.sender_phone,br.sender_address,br.receiver_name,br.phone,br.receiver_address,d.DISTRICT_CODE," +
-      "br.district_name,a.AMPHUR_CODE,br.amphur_name,p.PROVINCE_CODE,br.province_name,br.parcel_type as br_parcel_type,br.zipcode as br_zipcode,br.remark," +
-      "s.location_zone,s.alias_size,gSize.product_id,gSize.product_name,g.GEO_ID,g.GEO_NAME " +
+      "a.AMPHUR_CODE,p.PROVINCE_CODE,br.parcel_type as br_parcel_type,br.zipcode as br_zipcode,br.remark," +
+      "s.alias_size,gSize.product_id,gSize.product_name,g.GEO_ID,g.GEO_NAME " +
       "FROM billing_item bItem " +
       "LEFT JOIN billing_receiver_info br ON bItem.tracking=br.tracking " +
       "LEFT JOIN size_info s ON bItem.size_id=s.size_id " +
@@ -35,6 +35,15 @@ module.exports = bus => {
               var check_pass_item = true;
 
               for (i = 0; i < resultBillingItem.length; i++) {
+                if (resultBillingItem[i].sender_name === null) {
+                  check_pass_item = false;
+                }
+                if (resultBillingItem[i].sender_phone === null) {
+                  check_pass_item = false;
+                }
+                if (resultBillingItem[i].sender_address === null) {
+                  check_pass_item = false;
+                }
                 if (resultBillingItem[i].bi_parcel_type === null) {
                   check_pass_item = false;
                 }
@@ -136,6 +145,12 @@ module.exports = bus => {
         sender_address = data[j].sender_address;
       }
 
+      if(data[j].remark =='KEYIN' || data[j].remark == null){
+        ordershortnote="";
+      } else {
+        ordershortnote=data[j].remark;
+      }
+
       dataDes = {
         productinfo: {
           globalproductid: data[j].product_id,
@@ -150,7 +165,7 @@ module.exports = bus => {
           custphone: data[j].phone,
           custzipcode: data[j].br_zipcode,
           custaddr: data[j].receiver_address,
-          ordershortnote: "",
+          ordershortnote: ordershortnote,
           districtcode: data[j].DISTRICT_CODE,
           amphercode: data[j].AMPHUR_CODE,
           provincecode: data[j].PROVINCE_CODE,
@@ -189,7 +204,6 @@ module.exports = bus => {
     };
     bus2.emit("save_to_log", dataLog);
     bus.emit("save_raw_data", dataAll);
-    // bus2.emit("send_to_api", dataAll);
   });
 
   bus.on("save_raw_data", msg => {

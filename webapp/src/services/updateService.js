@@ -14,13 +14,17 @@ moment.locale("th");
 module.exports = {
   updateStatusReceiverInfo: (tracking, status, dateTimeString) => {
     return new Promise(function(resolve, reject) {
-      let sql ="SELECT status FROM billing_receiver_info where tracking=?";
-      let data=[tracking]
-      connection.query(sql,data, (error, results, fields) => {
+      let sql = "SELECT status FROM billing_receiver_info where tracking=?";
+      let data = [tracking];
+      connection.query(sql, data, (error, results, fields) => {
         if (results[0].status != "success") {
-          let updateReceiverInfo ="UPDATE billing_receiver_info SET status=?,sending_date=? WHERE tracking=?";
-          let dataReceiverInfo=[status,dateTimeString,tracking];
-          connection.query(updateReceiverInfo, dataReceiverInfo,function(err, data) {});
+          let updateReceiverInfo =
+            "UPDATE billing_receiver_info SET status=?,sending_date=? WHERE tracking=?";
+          let dataReceiverInfo = [status, dateTimeString, tracking];
+          connection.query(updateReceiverInfo, dataReceiverInfo, function(
+            err,
+            data
+          ) {});
         }
       });
     });
@@ -40,26 +44,29 @@ module.exports = {
     var dataBilling = [bill_no];
 
     let sqlBillingItem =
-    "SELECT bItem.tracking,bItem.size_id,bItem.size_price,bItem.parcel_type as bi_parcel_type,bItem.zipcode as bi_zipcode,bItem.cod_value," +
-    "br.sender_name,br.sender_phone,br.sender_address,br.receiver_name,br.phone,br.receiver_address,d.DISTRICT_CODE," +
-    "br.district_name,a.AMPHUR_CODE,br.amphur_name,p.PROVINCE_CODE,br.province_name,br.parcel_type as br_parcel_type,br.zipcode as br_zipcode,br.remark," +
-    "s.location_zone,s.alias_size,gSize.product_id,gSize.product_name,g.GEO_ID,g.GEO_NAME " +
-    "FROM billing_item bItem " +
-    "LEFT JOIN billing_receiver_info br ON bItem.tracking=br.tracking " +
-    "LEFT JOIN size_info s ON bItem.size_id=s.size_id " +
-    "LEFT JOIN global_parcel_size gSize ON s.location_zone = gSize.area AND s.alias_size =gSize.alias_name AND bItem.parcel_type= gSize.type " +
-    "LEFT JOIN postinfo_district d ON br.district_id=d.DISTRICT_ID and br.amphur_id=d.AMPHUR_ID and br.province_id=d.PROVINCE_ID " +
-    "LEFT JOIN postinfo_amphur a ON br.amphur_id=a.AMPHUR_ID " +
-    "LEFT JOIN postinfo_province p ON br.province_id=p.PROVINCE_ID " +
-    "LEFT JOIN postinfo_geography g ON d.GEO_ID=g.GEO_ID " +
-    "WHERE bItem.billing_no=?";
+      "SELECT bItem.tracking,bItem.size_id,bItem.size_price,bItem.parcel_type as bi_parcel_type,bItem.zipcode as bi_zipcode,bItem.cod_value," +
+      "br.sender_name,br.sender_phone,br.sender_address,br.receiver_name,br.phone,br.receiver_address,d.DISTRICT_CODE," +
+      "br.district_name,a.AMPHUR_CODE,br.amphur_name,p.PROVINCE_CODE,br.province_name,br.parcel_type as br_parcel_type,br.zipcode as br_zipcode,br.remark," +
+      "s.location_zone,s.alias_size,gSize.product_id,gSize.product_name,g.GEO_ID,g.GEO_NAME " +
+      "FROM billing_item bItem " +
+      "LEFT JOIN billing_receiver_info br ON bItem.tracking=br.tracking " +
+      "LEFT JOIN size_info s ON bItem.size_id=s.size_id " +
+      "LEFT JOIN global_parcel_size gSize ON s.location_zone = gSize.area AND s.alias_size =gSize.alias_name AND bItem.parcel_type= gSize.type " +
+      "LEFT JOIN postinfo_district d ON br.district_id=d.DISTRICT_ID and br.amphur_id=d.AMPHUR_ID and br.province_id=d.PROVINCE_ID " +
+      "LEFT JOIN postinfo_amphur a ON br.amphur_id=a.AMPHUR_ID " +
+      "LEFT JOIN postinfo_province p ON br.province_id=p.PROVINCE_ID " +
+      "LEFT JOIN postinfo_geography g ON d.GEO_ID=g.GEO_ID " +
+      "WHERE bItem.billing_no=?";
     var dataBillItem = [bill_no];
     return new Promise(function(resolve, reject) {
       connection.query(sqlBilling, dataBilling, (err, resultBilling) => {
-        if (!resultBilling) {
+        if (resultBilling.length == 0) {
           resolve(false);
         } else {
-          connection.query(sqlBillingItem,dataBillItem,(err, resultBillingItem) => {
+          connection.query(
+            sqlBillingItem,
+            dataBillItem,
+            (err, resultBillingItem) => {
               var dataResult = {
                 billingInfo: resultBilling,
                 billingItem: resultBillingItem
@@ -83,13 +90,15 @@ module.exports = {
   prepareRawData: () => {
     let selectJson =
       "SELECT prepare_raw_data,billing_no FROM billing WHERE status = ? AND prepare_raw_data is not null LIMIT 1";
-    let data = ['pending'];
+    let data = ["pending"];
     return new Promise(function(resolve, reject) {
       connection.query(selectJson, data, (err, results) => {
-        if (results.length==0) {
-          resolve(false);
-        } else {
-          resolve(results);
+        if (err === null) {
+          if (results.length == 0) {
+            resolve(false);
+          } else {
+            resolve(results);
+          }
         }
       });
     });

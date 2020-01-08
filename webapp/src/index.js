@@ -25,7 +25,7 @@ require("./events/sendApi.js")(bus2);
 app.get("/senddata", function(req, res) {
   // res.json({ 'hello': 'World' });
   var dataAuthen = {
-    user_id: 783,
+    user_id: 1108,
     branch_id: 47,
     mer_authen_level: "admin"
   };
@@ -45,15 +45,14 @@ function sendDataToMainServerTemp(dataAuthen, dataBill) {
     // console.log(res.billingItem);
     check_pass=true;
     for(i=0;i<res.billingItem.length;i++){
-      console.log(res.billingItem[i].receiver_name);
-      if(res.billingItem[i].receiver_name === null){
-        check_pass=false;
-      }
+      console.log(res.billingItem[i].remark);
+
       if(res.billingItem[i].phone === null){
         check_pass=false;
       }
+      // console.log("ordershortnote %d %s",i,ordershortnote);
     }
-    console.log(check_pass);
+    console.log("ordershortnote",ordershortnote);
   });
     
 }
@@ -87,7 +86,7 @@ setRawData = async t => {
   // sim_execute_time += 500;
 };
 
-task1 = async () => {
+q_prepare_data = async () => {
   let start_time = new Date().getTime();
 
   //-------------- CODE -----------//
@@ -99,7 +98,7 @@ task1 = async () => {
   // console.log("%s Actual Execute Time = %d",m().format(t_format),actual_execute_time);
   let delay_time = Math.max(execute_interval - actual_execute_time, hot_delay);
   // console.log("%s Delay Time = %d", m().format(t_format), delay_time);
-  setTimeout(task1, delay_time);
+  setTimeout(q_prepare_data, delay_time);
 };
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 sendApi = async t => {
@@ -122,7 +121,7 @@ sendApi = async t => {
   // sim_execute_time += 500;
 };
 
-task2 = async () => {
+q_send_api = async () => {
   let start_time = new Date().getTime();
 
   //-------------- CODE -----------//
@@ -134,11 +133,11 @@ task2 = async () => {
   console.log("%s Actual Execute Time = %d",m().format(t_format),actual_execute_time);
   let delay_time = Math.max(execute_interval - actual_execute_time, hot_delay);
   console.log("%s Delay Time = %d", m().format(t_format), delay_time);
-  setTimeout(task2, delay_time);
+  setTimeout(q_send_api, delay_time);
 };
 main = async () => {
-  task1();
-  task2();
+  q_prepare_data();
+  q_send_api();
 };
 
 main();
