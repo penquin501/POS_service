@@ -29,9 +29,16 @@ module.exports = bus => {
     var dataBillItem = [billingNo];
     connection.query(sqlBilling, dataBilling, function(err, resultBilling) {
       if (resultBilling.length > 0) {
-        connection.query(sqlBillingItem,dataBillItem,(err, resultBillingItem) => {
+        connection.query(
+          sqlBillingItem,
+          dataBillItem,
+          (err, resultBillingItem) => {
             if (resultBillingItem.length > 0) {
-              console.log("verify===2", billingNo);
+              console.log(
+                "verify === %s === %d",
+                billingNo,
+                resultBillingItem.length
+              );
               var check_pass_item = true;
 
               for (i = 0; i < resultBillingItem.length; i++) {
@@ -86,29 +93,34 @@ module.exports = bus => {
               }
 
               var check_pass = true;
-              
-              if(resultBilling[0].user_id === null){
+
+              if (resultBilling[0].user_id === null) {
                 check_pass = false;
               }
-              if(resultBilling[0].mer_authen_level === null){
+              if (resultBilling[0].mer_authen_level === null) {
                 check_pass = false;
               }
-              if(resultBilling[0].member_code === null){
+              if (resultBilling[0].member_code === null) {
                 check_pass = false;
               }
-              if(resultBilling[0].carrier_id === null){
+              if (resultBilling[0].carrier_id === null) {
                 check_pass = false;
               }
-              if(resultBilling[0].img_url === null){
+              if (resultBilling[0].img_url === null) {
                 check_pass = false;
               }
-              if(resultBilling[0].branch_id === null){
+              if (resultBilling[0].branch_id === null) {
                 check_pass = false;
               }
-              if(resultBilling[0].billing_no === null){
+              if (resultBilling[0].billing_no === null) {
                 check_pass = false;
               }
-              console.log("check_pass: %s   check_pass_item: %s      bill_no:%s",check_pass,check_pass_item, resultBilling[0].billing_no);
+              console.log(
+                "check_pass: %s   check_pass_item: %s      bill_no:%s",
+                check_pass,
+                check_pass_item,
+                resultBilling[0].billing_no
+              );
               if (check_pass && check_pass_item) {
                 var dataResult = {
                   billingInfo: resultBilling,
@@ -145,10 +157,10 @@ module.exports = bus => {
         sender_address = data[j].sender_address;
       }
 
-      if(data[j].remark =='KEYIN' || data[j].remark == null){
-        ordershortnote="";
+      if (data[j].remark == "KEYIN" || data[j].remark == null) {
+        ordershortnote = "";
       } else {
-        ordershortnote=data[j].remark;
+        ordershortnote = data[j].remark;
       }
 
       dataDes = {
@@ -209,7 +221,8 @@ module.exports = bus => {
   bus.on("save_raw_data", msg => {
     console.log("save_raw_data", msg.memberparcel.billingno);
     billingNo = msg.memberparcel.billingno;
-    let sqlSaveJson ="UPDATE billing SET prepare_raw_data=? WHERE billing_no=?";
+    let sqlSaveJson =
+      "UPDATE billing SET prepare_raw_data=? WHERE billing_no=?";
     let data = [JSON.stringify(msg), billingNo];
     connection.query(sqlSaveJson, data, function(err, result) {});
   });
@@ -217,9 +230,9 @@ module.exports = bus => {
   bus.on("update_status_to_null", msg => {
     console.log("update_status_to_null", msg);
     billingNo = msg;
-
-    let sqlUpdateStatus = "UPDATE billing SET status=NULL WHERE billing_no=?";
-    let data = [billingNo];
+    var status = "complete";
+    let sqlUpdateStatus = "UPDATE billing SET status=? WHERE billing_no=?";
+    let data = [status, billingNo];
 
     connection.query(sqlUpdateStatus, data, function(err, result) {});
   });

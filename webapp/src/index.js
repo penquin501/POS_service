@@ -60,14 +60,12 @@ function sendDataToMainServerTemp(dataAuthen, dataBill) {
 //////////////////////////////////////////////start cron job/////////////////////////////////////////////////////
 var t = 0;
 let t_format = "HH:mm:ss.SSS";
-// var sim_execute_time = 60000;
 var execute_interval = 10 * 1000;
 var hot_delay = 1000;
 var task_number = 0;
 
 setRawData = async t => {
   console.log("%s   Start execute setRawData", m().format(t_format));
-  // console.log("%s     process about %ds", m().format(t_format), sim_execute_time);
   //---------------
   await updateServices.selectBillingNotSend().then(function(listBilling) {
     if (listBilling !== null) {
@@ -81,9 +79,7 @@ setRawData = async t => {
   });
 
   //---------------
-  // console.log("%s     process return", m().format(t_format));
   console.log("%s   End execute setRawData", m().format(t_format));
-  // sim_execute_time += 500;
 };
 
 q_prepare_data = async () => {
@@ -103,7 +99,6 @@ q_prepare_data = async () => {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 sendApi = async t => {
   console.log("%s   Start execute sendApi", m().format(t_format));
-  // console.log("%s     process about %ds", m().format(t_format), sim_execute_time);
   //---------------
   await updateServices.prepareRawData().then(function(data) {
     if (data !== false) {
@@ -114,11 +109,9 @@ sendApi = async t => {
       bus2.emit("update_status_to_waiting", value);
     }
   });
-
   //---------------
   console.log("%s     process return", m().format(t_format));
   console.log("%s   End execute sendApi", m().format(t_format));
-  // sim_execute_time += 500;
 };
 
 q_send_api = async () => {

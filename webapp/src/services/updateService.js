@@ -30,10 +30,11 @@ module.exports = {
     });
   },
   selectBillingNotSend: () => {
-    var sqlBillingNotSend =
-      "SELECT billing_no FROM billing WHERE status is null";
+    var status='complete'
+    var sqlBillingNotSend = "SELECT billing_no FROM billing WHERE status=?";
+    var data=[status];
     return new Promise(function(resolve, reject) {
-      connection.query(sqlBillingNotSend, (error, results, fields) => {
+      connection.query(sqlBillingNotSend,data, (error, results, fields) => {
         resolve(results);
       });
     });
@@ -114,8 +115,7 @@ module.exports = {
   },
   updateStatusReceiverInfo: (tracking, status) => {
     // var dateTimeString = moment(new Date).format("YYYY-MM-DD HH:mm:ss", true);
-    let sql =
-      "UPDATE billing_receiver_info SET status=?,sending_date=? WHERE tracking=?";
+    let sql = "UPDATE billing_receiver_info SET status=?,sending_date=? WHERE tracking=?";
     var data = [status, new Date(), tracking];
 
     return new Promise(function(resolve, reject) {
