@@ -72,13 +72,9 @@ module.exports = bus2 => {
     billingNo = msg.billingNo;
     statusResult = JSON.parse(msg.result);
     if (statusResult.checkpass == "pass") {
-      let sqlSelectTracking =
-        "SELECT tracking FROM billing_item WHERE billing_no=?";
+      let sqlSelectTracking = "SELECT tracking FROM billing_item WHERE billing_no=?";
       let dataBilling = [billingNo];
-      connection.query(sqlSelectTracking, dataBilling, function(
-        err,
-        listTracking
-      ) {
+      connection.query(sqlSelectTracking, dataBilling, function( err, listTracking) {
         bus2.emit("update_status_item", { listTracking: listTracking });
       });
       status = statusResult.checkpass;
@@ -88,10 +84,7 @@ module.exports = bus2 => {
     let updateBilling =
       "UPDATE billing SET status=?,sending_date=? WHERE billing_no=?";
     let dataUpdateBilling = [status, new Date(), billingNo];
-    connection.query(updateBilling, dataUpdateBilling, function(
-      err,
-      dataBilling
-    ) {});
+    connection.query(updateBilling, dataUpdateBilling, function(err,dataBilling) {});
 
     var dataLog = {
       status: status,

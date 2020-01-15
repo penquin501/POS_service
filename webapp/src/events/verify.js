@@ -36,7 +36,7 @@ module.exports = bus => {
             if (resultBillingItem.length > 0) {
               console.log(
                 "verify === %s === %d",
-                billingNo,
+                resultBilling[0].billing_no,
                 resultBillingItem.length
               );
               var check_pass_item = true;
