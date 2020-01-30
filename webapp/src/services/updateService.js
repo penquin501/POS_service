@@ -12,7 +12,7 @@ moment.locale("th");
 
 module.exports = {
   updateStatusReceiverInfo: (tracking, status, dateTimeString) => {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
       let sql = "SELECT status FROM billing_receiver_info_test where tracking=?";
       let data = [tracking];
       connection.query(sql, data, (error, results, fields) => {
@@ -20,21 +20,21 @@ module.exports = {
           let updateReceiverInfo =
             "UPDATE billing_receiver_info_test SET status=?,sending_date=? WHERE tracking=?";
           let dataReceiverInfo = [status, dateTimeString, tracking];
-          connection.query(updateReceiverInfo, dataReceiverInfo, function(err,data) {});
+          connection.query(updateReceiverInfo, dataReceiverInfo, function (err, data) { });
         }
       });
     });
   },
   selectBillingNotSend: () => {
-    var status='complete'
+    var status = 'complete'
     var sqlBillingNotSend = "SELECT billing_no FROM billing_test WHERE status=?";
-    var data=[status];
-    return new Promise(function(resolve, reject) {
-      connection.query(sqlBillingNotSend,data, (error, results, fields) => {
-        if(error===null){
+    var data = [status];
+    return new Promise(function (resolve, reject) {
+      connection.query(sqlBillingNotSend, data, (error, results, fields) => {
+        if (error === null) {
           resolve(results);
         } else {
-          console.log("error=>",error);
+          console.log("error=>", error);
           resolve(null);
         }
       });
@@ -60,7 +60,7 @@ module.exports = {
       "LEFT JOIN postinfo_geography g ON d.GEO_ID=g.GEO_ID " +
       "WHERE bItem.billing_no=? AND (br.status!='cancel' OR br.status is null))";
     var dataBillItem = [bill_no];
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
       connection.query(sqlBilling, dataBilling, (err, resultBilling) => {
         if (resultBilling.length == 0) {
           resolve(false);
@@ -80,20 +80,20 @@ module.exports = {
       });
     });
   },
-  updatePending: (status, billingNo) => {
-    let updateBilling = "UPDATE billing_test SET status=? WHERE billing_no=?";
-    let data = [status, billingNo];
-    // return new Promise(function(resolve, reject) {
-      connection.query(updateBilling, data, (err, results) => {
-        busVerify.emit("verify", billingNo);
-      });
-    // });
-  },
+  // updatePending: (status, billingNo) => {
+  //   let updateBilling = "UPDATE billing_test SET status=? WHERE billing_no=?";
+  //   let data = [status, billingNo];
+  //   // return new Promise(function(resolve, reject) {
+  //   connection.query(updateBilling, data, (err, results) => {
+  //     busVerify.emit("verify", billingNo);
+  //   });
+  //   // });
+  // },
   prepareRawData: () => {
     let selectJson =
       "SELECT prepare_raw_data,billing_no FROM billing_test WHERE status = ? AND prepare_raw_data is not null LIMIT 1";
     let data = ["pending"];
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
       connection.query(selectJson, data, (err, results) => {
         if (err === null) {
           if (results.length == 0) {
@@ -110,7 +110,7 @@ module.exports = {
   updateStatusBilling: (bill_no, status) => {
     let sql = "UPDATE billing_test SET status=? WHERE billing_no=?";
     var data = [status, bill_no];
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
       connection.query(sql, data, (err, results) => {
         resolve(results);
       });
@@ -121,7 +121,7 @@ module.exports = {
     let sql = "UPDATE billing_receiver_info_test SET status=?,sending_date=? WHERE tracking=?";
     var data = [status, new Date(), tracking];
 
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
       connection.query(sql, data, (err, results) => {
         resolve(results);
       });
