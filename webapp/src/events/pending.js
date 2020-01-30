@@ -22,13 +22,12 @@ module.exports = bus => {
     bus.emit("update_pending", { status: status, billingNo: billingNo })
   });
 
-  bus.on("updatePending", msg => {
+  bus.on("update_pending", msg => {
     console.log("update_pending",msg.billingNo);
     let updateBilling = "UPDATE billing_test SET status=? WHERE billing_no=?";
     let data = [msg.status, msg.billingNo];
     connection.query(updateBilling, data, (err, results) => {
-      // console.log(results);
-      bus3.emit("verify", billingNo);
+      bus3.emit("verify", msg.billingNo);
     });
   });
 };
