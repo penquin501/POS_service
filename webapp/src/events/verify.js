@@ -1,15 +1,13 @@
 const connection = require("../env/db");
 const events = require("events");
-const busSendApi = new events.EventEmitter();
-const busPending = new events.EventEmitter();
+const bus2 = new events.EventEmitter();
 
-require("./sendApi.js")(busSendApi);
-require("./pending.js")(busPending);
+require("./sendApi.js")(bus2);
 
-module.exports = busVerify => {
-  busVerify.on("verify", msg => {
+module.exports = bus => {
+  bus.on("verify", msg => {
     console.log("verify", msg);
-    busSendApi.emit("update_last_process",{state:"verify"});
+    bus2.emit("update_last_process",{state:"verify"});
     
     billingNo = msg;
     var sqlBilling =
@@ -130,10 +128,10 @@ module.exports = busVerify => {
                   billingInfo: resultBilling,
                   billingItem: resultBillingItem
                 };
-                busVerify.emit("set_json_format", dataResult);
+                bus.emit("set_json_format", dataResult);
 
               } else {
-                busVerify.emit("update_status_to_null", resultBilling[0].billing_no);
+                bus.emit("update_status_to_null", resultBilling[0].billing_no);
 
               }
             }
@@ -143,8 +141,8 @@ module.exports = busVerify => {
     });
   });
 
-  busVerify.on("set_json_format", msg => {
-    busSendApi.emit("update_last_process",{state:"set JSON format"});
+  bus.on("set_json_format", msg => {
+    bus2.emit("update_last_process",{state:"set JSON format"});
     // console.log("set_json_format", msg);
     var billingInfo = msg.billingInfo;
     var data = msg.billingItem;
@@ -221,14 +219,14 @@ module.exports = busVerify => {
       status: "set JSON format",
       billingNo: billingInfo[0].billing_no
     };
-    busSendApi.emit("save_to_log", dataLog);
-    busVerify.emit("save_raw_data", dataAll);
+    bus2.emit("save_to_log", dataLog);
+    bus.emit("save_raw_data", dataAll);
     
   });
 
-  busVerify.on("save_raw_data", msg => {
+  bus.on("save_raw_data", msg => {
     console.log("save_raw_data", msg.memberparcel.billingno);
-    busSendApi.emit("update_last_process",{state:"save raw data"});
+    bus2.emit("update_last_process",{state:"save raw data"});
 
     billingNo = msg.memberparcel.billingno;
     let sqlSaveJson =
@@ -237,7 +235,7 @@ module.exports = busVerify => {
     connection.query(sqlSaveJson, data, function(err, result) {});
   });
 
-  busVerify.on("update_status_to_null", msg => {
+  bus.on("update_status_to_null", msg => {
     console.log("update_status_to_null", msg);
     billingNo = msg;
     var status = "complete";
@@ -245,6 +243,6 @@ module.exports = busVerify => {
     let data = [status, billingNo];
 
     connection.query(sqlUpdateStatus, data, function(err, result) {});
-    busSendApi.emit("update_last_process",{state:"reset complete"});
+    bus2.emit("update_last_process",{state:"reset complete"});
   });
 };

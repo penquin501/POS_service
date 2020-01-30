@@ -1,8 +1,11 @@
 const updateServices = require("../services/updateService.js");
-// const events = require('events');
-// const busSendApi = new events.EventEmitter();
+const connection = require("../env/db");
+const events = require('events');
+const bus2 = new events.EventEmitter();
+const bus3 = new events.EventEmitter();
 
-// require('./sendApi.js')(busSendApi);
+require('./sendApi.js')(bus2);
+require('./verify.js')(bus3);
 
 module.exports = bus => {
   bus.on("set_pending", msg => {
@@ -14,11 +17,18 @@ module.exports = bus => {
       status: status,
       billingNo: billingNo
     };
-    // busSendApi.emit("save_to_log", dataLog);
-    // busSendApi.emit("update_last_process",{state:status});
-    bus.emit("save_to_log", dataLog);
-    bus.emit("update_last_process", { state: status });
-    bus.emit("updatePending", { status: status, billingNo: billingNo })
-    // updateServices.updatePending({ status: status, billingNo: billingNo });
+    bus2.emit("save_to_log", dataLog);
+    bus2.emit("update_last_process", { state: status });
+    bus.emit("update_pending", { status: status, billingNo: billingNo })
+  });
+
+  bus.on("updatePending", msg => {
+    console.log("update_pending",msg.billingNo);
+    let updateBilling = "UPDATE billing_test SET status=? WHERE billing_no=?";
+    let data = [msg.status, msg.billingNo];
+    connection.query(updateBilling, data, (err, results) => {
+      // console.log(results);
+      bus3.emit("verify", billingNo);
+    });
   });
 };

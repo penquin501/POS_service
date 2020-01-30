@@ -1,9 +1,5 @@
 const request = require("request");
 const connection = require("../env/db");
-// const events = require("events");
-
-// const busPending = new events.EventEmitter();
-// require("./pending.js")(busPending);
 
 module.exports = bus => {
 
@@ -32,13 +28,15 @@ module.exports = bus => {
   bus.on("send_to_api", msg => {
     console.log("send_to_api", msg.billingNo);
 
-    bus.emit("update_last_process", { state: "send api to 945" });
+    bus.emit("update_last_process", { state: "send_api_to_945" });
 
     var dataLog = {
       status: "send to api",
       billingNo: msg.billingNo
     };
     bus.emit("save_to_log", dataLog);
+
+    
 
     // request(
     //   {
@@ -60,20 +58,20 @@ module.exports = bus => {
     //           result: res.body,
     //           billingNo: msg.billingNo
     //         };
-    //         busSendApi.emit("response_success", data);
+            bus.emit("response_success", data);
     //       } else {
     //         var data = {
     //           result: res,
     //           billingNo: msg.billingNo
     //         };
-    //         busSendApi.emit("response_error", data);
+    //         bus.emit("response_error", data);
     //       }
     //     } else {
     //       var data = {
     //         result: err.code,
     //         billingNo: msg.billingNo
     //       };
-    //       busSendApi.emit("response_error_code", data);
+    //       bus.emit("response_error_code", data);
     //     }
     //   }
     // );
@@ -81,7 +79,7 @@ module.exports = bus => {
 
   bus.on("response_success", msg => {
     console.log("success", msg.billingNo);
-    bus.emit("update_last_process", { state: "response success" });
+    bus.emit("update_last_process", { state: "response_success" });
 
     billingNo = msg.billingNo;
     statusResult = JSON.parse(msg.result);
@@ -107,14 +105,6 @@ module.exports = bus => {
     bus.emit("save_to_log", dataLog);
   });
 
-  bus.on("updatePending", msg => {
-    let updateBilling = "UPDATE billing_test SET status=? WHERE billing_no=?";
-    let data = [msg.status, msg.billingNo];
-    connection.query(updateBilling, data, (err, results) => {
-      bus.emit("verify", billingNo);
-    });
-  });
-
   bus.on("update_status_item", msg => {
     bus.emit("update_last_process", { state: "update status item" });
     listStatus = msg.listTracking;
@@ -130,7 +120,7 @@ module.exports = bus => {
   });
 
   bus.on("response_error_code", msg => {
-    bus.emit("update_last_process", { state: "error code" });
+    bus.emit("update_last_process", { state: "response_error_code" });
 
     let updateBilling = "UPDATE billing_test SET status=? WHERE billing_no=?";
     let dataUpdateBilling = [msg.result, msg.billingNo];
@@ -139,7 +129,7 @@ module.exports = bus => {
 
   bus.on("response_error", msg => {
     console.log("error", msg.billingNo);
-    bus.emit("update_last_process", { state: "error" });
+    bus.emit("update_last_process", { state: "response_error" });
 
     if (msg.result.body) {
       desStatus = JSON.parse(msg.result.body);

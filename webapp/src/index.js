@@ -8,6 +8,7 @@ const events = require("events");
 
 const port = process.env.PORT || 3500;
 const bus = new events.EventEmitter();
+const bus2 = new events.EventEmitter();
 
 moment.locale("th");
 app.use(express.json());
@@ -17,7 +18,7 @@ const billing_connection = require("./env/mainDB");
 
 const updateServices = require("./services/updateService.js");
 require("./events/pending.js")(bus);
-require("./events/sendApi.js")(bus);
+require("./events/sendApi.js")(bus2);
 
 
 //////////////////////////////////////////////send 1:1////////////////////////////////////////////////////////////////
@@ -67,15 +68,13 @@ setRawData = async t => {
   console.log("%s   Start execute setRawData", m().format(t_format));
   //---------------
   await updateServices.selectBillingNotSend().then(function(listBilling) {
-    bus.emit("update_last_process",{state:"set_raw_data"});
+    bus2.emit("update_last_process",{state:"set_raw_data"});
     if (listBilling !== null) {
       for (i = 0; i < listBilling.length; i++) {
         value = {
           billingNo: listBilling[i].billing_no
         };
-        // console.log(value);
         bus.emit("set_pending", value);
-        
       }
     }
   });
@@ -103,13 +102,13 @@ sendApi = async t => {
   console.log("%s   Start execute sendApi", m().format(t_format));
   //---------------
   await updateServices.prepareRawData().then(function(data) {
-   bus.emit("update_last_process",{state:"send_api"});
+    bus2.emit("update_last_process",{state:"prepare_send_api"});
     if (data !== false) {
       value = {
         billingNo: data[0].billing_no,
         rawData: data[0].prepare_raw_data
       };
-      bus.emit("update_status_to_waiting", value);
+      bus2.emit("update_status_to_waiting", value);
     }
   });
   //---------------
@@ -133,7 +132,7 @@ q_send_api = async () => {
 };
 main = async () => {
   q_prepare_data();
-  // q_send_api();
+  q_send_api();
 };
 
 main();
