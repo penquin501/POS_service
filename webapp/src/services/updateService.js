@@ -4,38 +4,39 @@ const request = require("request");
 const moment = require("moment");
 
 const events = require("events");
-const bus = new events.EventEmitter();
+const busVerify = new events.EventEmitter();
 
-require("../events/verify")(bus);
-// require('../events/sendApi')(bus2);
+require("../events/verify")(busVerify);
 
 moment.locale("th");
 
 module.exports = {
   updateStatusReceiverInfo: (tracking, status, dateTimeString) => {
     return new Promise(function(resolve, reject) {
-      let sql = "SELECT status FROM billing_receiver_info where tracking=?";
+      let sql = "SELECT status FROM billing_receiver_info_test where tracking=?";
       let data = [tracking];
       connection.query(sql, data, (error, results, fields) => {
         if (results[0].status != "success") {
           let updateReceiverInfo =
-            "UPDATE billing_receiver_info SET status=?,sending_date=? WHERE tracking=?";
+            "UPDATE billing_receiver_info_test SET status=?,sending_date=? WHERE tracking=?";
           let dataReceiverInfo = [status, dateTimeString, tracking];
-          connection.query(updateReceiverInfo, dataReceiverInfo, function(
-            err,
-            data
-          ) {});
+          connection.query(updateReceiverInfo, dataReceiverInfo, function(err,data) {});
         }
       });
     });
   },
   selectBillingNotSend: () => {
     var status='complete'
-    var sqlBillingNotSend = "SELECT billing_no FROM billing WHERE status=?";
+    var sqlBillingNotSend = "SELECT billing_no FROM billing_test WHERE status=?";
     var data=[status];
     return new Promise(function(resolve, reject) {
       connection.query(sqlBillingNotSend,data, (error, results, fields) => {
-        resolve(results);
+        if(error===null){
+          resolve(results);
+        } else {
+          console.log("error=>",error);
+          resolve(null);
+        }
       });
     });
   },
@@ -57,7 +58,7 @@ module.exports = {
       "LEFT JOIN postinfo_amphur a ON br.amphur_id=a.AMPHUR_ID " +
       "LEFT JOIN postinfo_province p ON br.province_id=p.PROVINCE_ID " +
       "LEFT JOIN postinfo_geography g ON d.GEO_ID=g.GEO_ID " +
-      "WHERE bItem.billing_no=?";
+      "WHERE bItem.billing_no=? AND (br.status!='cancel' OR br.status is null))";
     var dataBillItem = [bill_no];
     return new Promise(function(resolve, reject) {
       connection.query(sqlBilling, dataBilling, (err, resultBilling) => {
@@ -80,17 +81,17 @@ module.exports = {
     });
   },
   updatePending: (status, billingNo) => {
-    let updateBilling = "UPDATE billing SET status=? WHERE billing_no=?";
+    let updateBilling = "UPDATE billing_test SET status=? WHERE billing_no=?";
     let data = [status, billingNo];
-    return new Promise(function(resolve, reject) {
+    // return new Promise(function(resolve, reject) {
       connection.query(updateBilling, data, (err, results) => {
-        bus.emit("verify", billingNo);
+        busVerify.emit("verify", billingNo);
       });
-    });
+    // });
   },
   prepareRawData: () => {
     let selectJson =
-      "SELECT prepare_raw_data,billing_no FROM billing WHERE status = ? AND prepare_raw_data is not null LIMIT 1";
+      "SELECT prepare_raw_data,billing_no FROM billing_test WHERE status = ? AND prepare_raw_data is not null LIMIT 1";
     let data = ["pending"];
     return new Promise(function(resolve, reject) {
       connection.query(selectJson, data, (err, results) => {
@@ -100,12 +101,14 @@ module.exports = {
           } else {
             resolve(results);
           }
+        } else {
+          resolve(false);
         }
       });
     });
   },
   updateStatusBilling: (bill_no, status) => {
-    let sql = "UPDATE billing SET status=? WHERE billing_no=?";
+    let sql = "UPDATE billing_test SET status=? WHERE billing_no=?";
     var data = [status, bill_no];
     return new Promise(function(resolve, reject) {
       connection.query(sql, data, (err, results) => {
@@ -115,7 +118,7 @@ module.exports = {
   },
   updateStatusReceiverInfo: (tracking, status) => {
     // var dateTimeString = moment(new Date).format("YYYY-MM-DD HH:mm:ss", true);
-    let sql = "UPDATE billing_receiver_info SET status=?,sending_date=? WHERE tracking=?";
+    let sql = "UPDATE billing_receiver_info_test SET status=?,sending_date=? WHERE tracking=?";
     var data = [status, new Date(), tracking];
 
     return new Promise(function(resolve, reject) {
@@ -123,5 +126,5 @@ module.exports = {
         resolve(results);
       });
     });
-  }
+  },
 };

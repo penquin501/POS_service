@@ -2,8 +2,8 @@ version: "2.0"
 services:
   webapp:
     build: webapp
-    # image: sunteen-reg.ut9.me:5000/workshop/parcel-to-945
-    restart: unless-stopped
+    image: sunteen-reg.ut9.me:5000/workshop/parcel-to-945
+    # restart: unless-stopped
     ports:
-      - "80:3200"
+      - "3200:3200"
     

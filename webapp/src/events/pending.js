@@ -1,9 +1,8 @@
-
 const updateServices = require("../services/updateService.js");
 const events = require('events');
-const bus2 = new events.EventEmitter();
+const busSendApi = new events.EventEmitter();
 
-require('./sendApi.js')(bus2);
+require('./sendApi.js')(busSendApi);
 
 module.exports = bus => {
   bus.on("set_pending", msg => {
@@ -15,10 +14,8 @@ module.exports = bus => {
       status: status,
       billingNo: billingNo
     };
-    bus2.emit("save_to_log", dataLog);
-
+    busSendApi.emit("save_to_log", dataLog);
+    busSendApi.emit("update_last_process",{state:status});
     updateServices.updatePending(status, billingNo).then(function(data) {});
   });
-
-  
 };

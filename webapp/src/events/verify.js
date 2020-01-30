@@ -1,15 +1,19 @@
 const connection = require("../env/db");
 const events = require("events");
-const bus2 = new events.EventEmitter();
+const busSendApi = new events.EventEmitter();
+const busPending = new events.EventEmitter();
 
-require("./sendApi.js")(bus2);
+require("./sendApi.js")(busSendApi);
+require("./pending.js")(busPending);
 
-module.exports = bus => {
-  bus.on("verify", msg => {
+module.exports = busVerify => {
+  busVerify.on("verify", msg => {
     console.log("verify", msg);
+    busSendApi.emit("update_last_process",{state:"verify"});
+    
     billingNo = msg;
     var sqlBilling =
-      "SELECT user_id,mer_authen_level,member_code,carrier_id,billing_no,branch_id,img_url FROM billing WHERE billing_no= ?";
+      "SELECT user_id,mer_authen_level,member_code,carrier_id,billing_no,branch_id,img_url FROM billing_test WHERE billing_no= ?";
     var dataBilling = [billingNo];
 
     let sqlBillingItem =
@@ -17,15 +21,15 @@ module.exports = bus => {
       "br.sender_name,br.sender_phone,br.sender_address,br.receiver_name,br.phone,br.receiver_address,d.DISTRICT_CODE," +
       "a.AMPHUR_CODE,p.PROVINCE_CODE,br.parcel_type as br_parcel_type,br.zipcode as br_zipcode,br.remark," +
       "s.alias_size,gSize.product_id,gSize.product_name,g.GEO_ID,g.GEO_NAME " +
-      "FROM billing_item bItem " +
-      "LEFT JOIN billing_receiver_info br ON bItem.tracking=br.tracking " +
+      "FROM billing_item_test bItem " +
+      "LEFT JOIN billing_receiver_info_test br ON bItem.tracking=br.tracking " +
       "LEFT JOIN size_info s ON bItem.size_id=s.size_id " +
       "LEFT JOIN global_parcel_size gSize ON s.location_zone = gSize.area AND s.alias_size =gSize.alias_name AND bItem.parcel_type= gSize.type " +
       "LEFT JOIN postinfo_district d ON br.district_id=d.DISTRICT_ID and br.amphur_id=d.AMPHUR_ID and br.province_id=d.PROVINCE_ID " +
       "LEFT JOIN postinfo_amphur a ON br.amphur_id=a.AMPHUR_ID " +
       "LEFT JOIN postinfo_province p ON br.province_id=p.PROVINCE_ID " +
       "LEFT JOIN postinfo_geography g ON d.GEO_ID=g.GEO_ID " +
-      "WHERE bItem.billing_no=?";
+      "WHERE bItem.billing_no=? AND (br.status != 'cancel' or br.status is null)";
     var dataBillItem = [billingNo];
     connection.query(sqlBilling, dataBilling, function(err, resultBilling) {
       if (resultBilling.length > 0) {
@@ -126,9 +130,11 @@ module.exports = bus => {
                   billingInfo: resultBilling,
                   billingItem: resultBillingItem
                 };
-                bus.emit("set_json_format", dataResult);
+                busVerify.emit("set_json_format", dataResult);
+
               } else {
-                bus.emit("update_status_to_null", resultBilling[0].billing_no);
+                busVerify.emit("update_status_to_null", resultBilling[0].billing_no);
+
               }
             }
           }
@@ -137,7 +143,8 @@ module.exports = bus => {
     });
   });
 
-  bus.on("set_json_format", msg => {
+  busVerify.on("set_json_format", msg => {
+    busSendApi.emit("update_last_process",{state:"set JSON format"});
     // console.log("set_json_format", msg);
     var billingInfo = msg.billingInfo;
     var data = msg.billingItem;
@@ -214,26 +221,30 @@ module.exports = bus => {
       status: "set JSON format",
       billingNo: billingInfo[0].billing_no
     };
-    bus2.emit("save_to_log", dataLog);
-    bus.emit("save_raw_data", dataAll);
+    busSendApi.emit("save_to_log", dataLog);
+    busVerify.emit("save_raw_data", dataAll);
+    
   });
 
-  bus.on("save_raw_data", msg => {
+  busVerify.on("save_raw_data", msg => {
     console.log("save_raw_data", msg.memberparcel.billingno);
+    busSendApi.emit("update_last_process",{state:"save raw data"});
+
     billingNo = msg.memberparcel.billingno;
     let sqlSaveJson =
-      "UPDATE billing SET prepare_raw_data=? WHERE billing_no=?";
+      "UPDATE billing_test SET prepare_raw_data=? WHERE billing_no=?";
     let data = [JSON.stringify(msg), billingNo];
     connection.query(sqlSaveJson, data, function(err, result) {});
   });
 
-  bus.on("update_status_to_null", msg => {
+  busVerify.on("update_status_to_null", msg => {
     console.log("update_status_to_null", msg);
     billingNo = msg;
     var status = "complete";
-    let sqlUpdateStatus = "UPDATE billing SET status=? WHERE billing_no=?";
+    let sqlUpdateStatus = "UPDATE billing_test SET status=? WHERE billing_no=?";
     let data = [status, billingNo];
 
     connection.query(sqlUpdateStatus, data, function(err, result) {});
+    busSendApi.emit("update_last_process",{state:"reset complete"});
   });
 };
