@@ -13,7 +13,7 @@ module.exports = bus => {
     };
     bus.emit("save_to_log", dataLog);
 
-    let updateBilling = "UPDATE billing_test SET status=? WHERE billing_no=?";
+    let updateBilling = "UPDATE billing SET status=? WHERE billing_no=?";
     let data = ["waiting", msg.billingNo];
     connection.query(updateBilling, data, function(err, dataBilling) {
       value = {
@@ -82,7 +82,7 @@ module.exports = bus => {
     statusResult = JSON.parse(msg.result);
     if (statusResult.checkpass == "pass") {
       let sqlSelectTracking =
-        "SELECT tracking FROM billing_item_test WHERE billing_no=?";
+        "SELECT tracking FROM billing_item WHERE billing_no=?";
       let dataBilling = [billingNo];
       connection.query(sqlSelectTracking, dataBilling, function(
         err,
@@ -95,7 +95,7 @@ module.exports = bus => {
       status = statusResult.checkpass + "-" + statusResult.reason;
     }
     let updateBilling =
-      "UPDATE billing_test SET status=?,sending_date=? WHERE billing_no=?";
+      "UPDATE billing SET status=?,sending_date=? WHERE billing_no=?";
     let dataUpdateBilling = [status, new Date(), billingNo];
     connection.query(updateBilling, dataUpdateBilling, function(
       err,
@@ -117,7 +117,7 @@ module.exports = bus => {
       var status = "success";
 
       let sql =
-        "UPDATE billing_receiver_info_test SET status=?,sending_date=? WHERE tracking=?";
+        "UPDATE billing_receiver_info SET status=?,sending_date=? WHERE tracking=?";
       var data = [status, new Date(), tracking];
       connection.query(sql, data, function(err, dataBillingItem) {});
     }
@@ -126,7 +126,7 @@ module.exports = bus => {
   bus.on("response_error_code", msg => {
     bus.emit("update_last_process", { state: "response_error_code" });
 
-    let updateBilling = "UPDATE billing_test SET status=? WHERE billing_no=?";
+    let updateBilling = "UPDATE billing SET status=? WHERE billing_no=?";
     let dataUpdateBilling = [msg.result, msg.billingNo];
     connection.query(updateBilling, dataUpdateBilling, function(
       err,
@@ -148,7 +148,7 @@ module.exports = bus => {
     } else {
       status = msg.result.statusCode + "-" + msg.result.statusMessage;
     }
-    let updateBilling = "UPDATE billing_test SET status=? WHERE billing_no=?";
+    let updateBilling = "UPDATE billing SET status=? WHERE billing_no=?";
     let dataUpdateBilling = [status, msg.billingNo];
     connection.query(updateBilling, dataUpdateBilling, function(
       err,

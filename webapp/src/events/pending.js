@@ -24,7 +24,7 @@ module.exports = bus => {
 
   bus.on("update_pending", msg => {
     console.log("update_pending",msg.billingNo);
-    let updateBilling = "UPDATE billing_test SET status=? WHERE billing_no=?";
+    let updateBilling = "UPDATE billing SET status=? WHERE billing_no=?";
     let data = [msg.status, msg.billingNo];
     connection.query(updateBilling, data, (err, results) => {
       bus3.emit("verify", msg.billingNo);

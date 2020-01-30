@@ -11,7 +11,7 @@ module.exports = bus => {
     
     billingNo = msg;
     var sqlBilling =
-      "SELECT user_id,mer_authen_level,member_code,carrier_id,billing_no,branch_id,img_url FROM billing_test WHERE billing_no= ?";
+      "SELECT user_id,mer_authen_level,member_code,carrier_id,billing_no,branch_id,img_url FROM billing WHERE billing_no= ?";
     var dataBilling = [billingNo];
 
     let sqlBillingItem =
@@ -19,8 +19,8 @@ module.exports = bus => {
       "br.sender_name,br.sender_phone,br.sender_address,br.receiver_name,br.phone,br.receiver_address,d.DISTRICT_CODE," +
       "a.AMPHUR_CODE,p.PROVINCE_CODE,br.parcel_type as br_parcel_type,br.zipcode as br_zipcode,br.remark," +
       "s.alias_size,gSize.product_id,gSize.product_name,g.GEO_ID,g.GEO_NAME " +
-      "FROM billing_item_test bItem " +
-      "LEFT JOIN billing_receiver_info_test br ON bItem.tracking=br.tracking " +
+      "FROM billing_item bItem " +
+      "LEFT JOIN billing_receiver_info br ON bItem.tracking=br.tracking " +
       "LEFT JOIN size_info s ON bItem.size_id=s.size_id " +
       "LEFT JOIN global_parcel_size gSize ON s.location_zone = gSize.area AND s.alias_size =gSize.alias_name AND bItem.parcel_type= gSize.type " +
       "LEFT JOIN postinfo_district d ON br.district_id=d.DISTRICT_ID and br.amphur_id=d.AMPHUR_ID and br.province_id=d.PROVINCE_ID " +
@@ -143,7 +143,7 @@ module.exports = bus => {
 
   bus.on("set_json_format", msg => {
     bus2.emit("update_last_process",{state:"set JSON format"});
-    // console.log("set_json_format", msg);
+    console.log("set_json_format", msg);
     var billingInfo = msg.billingInfo;
     var data = msg.billingItem;
 
@@ -230,7 +230,7 @@ module.exports = bus => {
 
     billingNo = msg.memberparcel.billingno;
     let sqlSaveJson =
-      "UPDATE billing_test SET prepare_raw_data=? WHERE billing_no=?";
+      "UPDATE billing SET prepare_raw_data=? WHERE billing_no=?";
     let data = [JSON.stringify(msg), billingNo];
     connection.query(sqlSaveJson, data, function(err, result) {});
   });
@@ -239,7 +239,7 @@ module.exports = bus => {
     console.log("update_status_to_null", msg);
     billingNo = msg;
     var status = "complete";
-    let sqlUpdateStatus = "UPDATE billing_test SET status=? WHERE billing_no=?";
+    let sqlUpdateStatus = "UPDATE billing SET status=? WHERE billing_no=?";
     let data = [status, billingNo];
 
     connection.query(sqlUpdateStatus, data, function(err, result) {});

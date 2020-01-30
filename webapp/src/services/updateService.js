@@ -29,7 +29,7 @@ module.exports = {
   selectBillingNotSend: () => {
     var status = "complete";
     var sqlBillingNotSend =
-      "SELECT billing_no FROM billing_test WHERE status=?";
+      "SELECT billing_no FROM billing WHERE status=?";
     var data = [status];
     return new Promise(function(resolve, reject) {
       connection.query(sqlBillingNotSend, data, (error, results, fields) => {
@@ -83,7 +83,7 @@ module.exports = {
     });
   },
   updatePending: (status, billingNo) => {
-    let updateBilling = "UPDATE billing_test SET status=? WHERE billing_no=?";
+    let updateBilling = "UPDATE billing SET status=? WHERE billing_no=?";
     let data = [status, billingNo];
     return new Promise(function(resolve, reject) {
       connection.query(updateBilling, data, (err, results) => {
@@ -93,7 +93,7 @@ module.exports = {
   },
   prepareRawData: () => {
     let selectJson =
-      "SELECT prepare_raw_data,billing_no FROM billing_test WHERE status = ? AND prepare_raw_data is not null LIMIT 1";
+      "SELECT prepare_raw_data,billing_no FROM billing WHERE status = ? AND prepare_raw_data is not null LIMIT 1";
     let data = ["pending"];
     return new Promise(function(resolve, reject) {
       connection.query(selectJson, data, (err, results) => {
@@ -110,7 +110,7 @@ module.exports = {
     });
   },
   updateStatusBilling: (bill_no, status) => {
-    let sql = "UPDATE billing_test SET status=? WHERE billing_no=?";
+    let sql = "UPDATE billing SET status=? WHERE billing_no=?";
     var data = [status, bill_no];
     return new Promise(function(resolve, reject) {
       connection.query(sql, data, (err, results) => {
@@ -121,7 +121,7 @@ module.exports = {
   updateStatusReceiverInfo: (tracking, status) => {
     // var dateTimeString = moment(new Date).format("YYYY-MM-DD HH:mm:ss", true);
     let sql =
-      "UPDATE billing_receiver_info_test SET status=?,sending_date=? WHERE tracking=?";
+      "UPDATE billing_receiver_info SET status=?,sending_date=? WHERE tracking=?";
     var data = [status, new Date(), tracking];
 
     return new Promise(function(resolve, reject) {
