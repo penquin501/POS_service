@@ -11,12 +11,12 @@ module.exports = {
   updateStatusReceiverInfo: (tracking, status, dateTimeString) => {
     return new Promise(function(resolve, reject) {
       let sql =
-        "SELECT status FROM billing_receiver_info_test where tracking=?";
+        "SELECT status FROM billing_receiver_info where tracking=?";
       let data = [tracking];
       connection.query(sql, data, (error, results, fields) => {
         if (results[0].status != "success") {
           let updateReceiverInfo =
-            "UPDATE billing_receiver_info_test SET status=?,sending_date=? WHERE tracking=?";
+            "UPDATE billing_receiver_info SET status=?,sending_date=? WHERE tracking=?";
           let dataReceiverInfo = [status, dateTimeString, tracking];
           connection.query(updateReceiverInfo, dataReceiverInfo, function(
             err,
