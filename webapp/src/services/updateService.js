@@ -27,7 +27,7 @@ module.exports = {
     });
   },
   selectBillingNotSend: () => {
-    var status = "complete";
+    var status = "booked";
     var sqlBillingNotSend =
       "SELECT billing_no FROM billing WHERE status=?";
     var data = [status];
