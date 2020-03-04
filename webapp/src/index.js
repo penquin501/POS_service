@@ -1,6 +1,6 @@
+require('dotenv').config()
 const express = require("express");
 const request = require("request");
-var cron = require("node-cron");
 const app = express();
 const moment = require("moment");
 var m = require("moment-timezone");
@@ -20,6 +20,11 @@ const updateServices = require("./services/updateService.js");
 require("./events/pending.js")(bus);
 require("./events/sendApi.js")(bus2);
 
+if (process.env.NODE_ENV === 'production') {
+  console.log('In production mode');
+} else {
+  console.log('In development mode');
+}
 
 //////////////////////////////////////////////send 1:1////////////////////////////////////////////////////////////////
 app.get("/senddata", function(req, res) {
