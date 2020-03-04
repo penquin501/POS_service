@@ -14,7 +14,6 @@ moment.locale("th");
 app.use(express.json());
 
 const connection = require("./env/db");
-const billing_connection = require("./env/mainDB");
 
 const updateServices = require("./services/updateService.js");
 require("./events/pending.js")(bus);
