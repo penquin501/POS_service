@@ -33,13 +33,20 @@ module.exports = bus => {
       if (resultBilling.length > 0) {
         connection.query(sqlBillingItem,dataBillItem,(err, resultBillingItem) => {
             if (resultBillingItem.length > 0) {
-              console.log(
-                "verify === %s === %d",
-                resultBilling[0].billing_no,
-                resultBillingItem.length
-              );
-              var check_pass_item = true;
 
+              console.log("verify === %s === %d",resultBilling[0].billing_no,resultBillingItem.length);
+              var check_pass_item = true;
+              // var check_pass = true;
+              // if (check_pass_item && check_pass) {
+              //   var dataResult = {
+              //     billingInfo: resultBilling,
+              //     billingItem: resultBillingItem
+              //   };
+              //   bus.emit("set_json_format", dataResult);
+
+              // } else {
+              //   bus.emit("update_status_to_null", resultBilling[0].billing_no);
+              // }
               for (i = 0; i < resultBillingItem.length; i++) {
                 if (resultBillingItem[i].sender_name === null) {
                   console.log("no sender_name");
@@ -105,14 +112,14 @@ module.exports = bus => {
                   console.log("no tracking");
                   check_pass_item = false;
                 }
-                if (resultBillingItem[i].bi_parcel_type !== resultBillingItem[i].br_parcel_type) {
-                  console.log("type not match");
-                  check_pass_item = false;
-                }
-                if (resultBillingItem[i].bi_zipcode !== resultBillingItem[i].br_zipcode) {
-                  console.log("zipcode not match");
-                  check_pass_item = false;
-                }
+                // if (resultBillingItem[i].bi_parcel_type !== resultBillingItem[i].br_parcel_type) {
+                //   console.log("type not match");
+                //   check_pass_item = false;
+                // }
+                // if (resultBillingItem[i].bi_zipcode !== resultBillingItem[i].br_zipcode) {
+                //   console.log("zipcode not match");
+                //   check_pass_item = false;
+                // }
               }
 
               var check_pass = true;
@@ -265,6 +272,7 @@ module.exports = bus => {
   bus.on("update_status_to_null", msg => {
     console.log("update_status_to_null", msg);
     billingNo = msg;
+    // var status = "booked";
     var status = "complete";
     let sqlUpdateStatus = "UPDATE billing SET status=? WHERE billing_no=?";
     let data = [status, billingNo];
