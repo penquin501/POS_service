@@ -96,9 +96,9 @@ q_prepare_data = async () => {
 
   let end_time = new Date().getTime();
   let actual_execute_time = end_time - start_time;
-  // console.log("%s Actual Execute Time = %d",m().format(t_format),actual_execute_time);
+  console.log("%s Actual Execute Time = %d",m().format(t_format),actual_execute_time);
   let delay_time = Math.max(execute_interval - actual_execute_time, hot_delay);
-  // console.log("%s Delay Time = %d", m().format(t_format), delay_time);
+  console.log("%s Delay Time = %d", m().format(t_format), delay_time);
   setTimeout(q_prepare_data, delay_time);
 };
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////

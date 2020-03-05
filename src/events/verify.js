@@ -36,127 +36,127 @@ module.exports = bus => {
 
               console.log("verify === %s === %d",resultBilling[0].billing_no,resultBillingItem.length);
               var check_pass_item = true;
-              // var check_pass = true;
-              // if (check_pass_item && check_pass) {
-              //   var dataResult = {
-              //     billingInfo: resultBilling,
-              //     billingItem: resultBillingItem
-              //   };
-              //   bus.emit("set_json_format", dataResult);
-
-              // } else {
-              //   bus.emit("update_status_to_null", resultBilling[0].billing_no);
-              // }
-              for (i = 0; i < resultBillingItem.length; i++) {
-                if (resultBillingItem[i].sender_name === null) {
-                  console.log("no sender_name");
-                  check_pass_item = false;
-                }
-                if (resultBillingItem[i].sender_phone === null) {
-                  console.log("no sender_phone");
-                  check_pass_item = false;
-                }
-                if (resultBillingItem[i].sender_address === null) {
-                  console.log("no sender_address");
-                  check_pass_item = false;
-                }
-                if (resultBillingItem[i].bi_parcel_type === null) {
-                  console.log("no bi_parcel_type");
-                  check_pass_item = false;
-                }
-                if (resultBillingItem[i].size_price === null) {
-                  console.log("no size_price");
-                  check_pass_item = false;
-                }
-                if (resultBillingItem[i].receiver_name === null) {
-                  console.log("no receiver_name");
-                  check_pass_item = false;
-                }
-                if (resultBillingItem[i].phone === null) {
-                  console.log("no phone");
-                  check_pass_item = false;
-                }
-                if (resultBillingItem[i].receiver_address === null) {
-                  console.log("no receiver_address");
-                  check_pass_item = false;
-                }
-                if (resultBillingItem[i].DISTRICT_CODE === null) {
-                  console.log("no DISTRICT_CODE");
-                  check_pass_item = false;
-                }
-                if (resultBillingItem[i].AMPHUR_CODE === null) {
-                  console.log("no AMPHUR_CODE");
-                  check_pass_item = false;
-                }
-                if (resultBillingItem[i].PROVINCE_CODE === null) {
-                  console.log("no PROVINCE_CODE");
-                  check_pass_item = false;
-                }
-                if (resultBillingItem[i].br_zipcode === null) {
-                  console.log("no br_zipcode");
-                  check_pass_item = false;
-                }
-                if (resultBillingItem[i].product_id === null) {
-                  console.log("no product_id");
-                  check_pass_item = false;
-                }
-                if (resultBillingItem[i].product_name === null) {
-                  console.log("no product_name");
-                  check_pass_item = false;
-                }
-                if (resultBillingItem[i].GEO_ID === null) {
-                  console.log("no GEO_ID");
-                  check_pass_item = false;
-                }
-                if (resultBillingItem[i].tracking === null) {
-                  console.log("no tracking");
-                  check_pass_item = false;
-                }
-                // if (resultBillingItem[i].bi_parcel_type !== resultBillingItem[i].br_parcel_type) {
-                //   console.log("type not match");
-                //   check_pass_item = false;
-                // }
-                // if (resultBillingItem[i].bi_zipcode !== resultBillingItem[i].br_zipcode) {
-                //   console.log("zipcode not match");
-                //   check_pass_item = false;
-                // }
-              }
-
               var check_pass = true;
+              if (check_pass_item && check_pass) {
+                var dataResult = {
+                  billingInfo: resultBilling,
+                  billingItem: resultBillingItem
+                };
+                bus.emit("set_json_format", dataResult);
 
-              if (resultBilling[0].user_id === null) {
-                console.log("no user_id");
-                check_pass = false;
+              } else {
+                bus.emit("update_status_to_null", resultBilling[0].billing_no);
               }
-              if (resultBilling[0].mer_authen_level === null) {
-                console.log("no mer_authen_level");
-                check_pass = false;
-              }
-              if (resultBilling[0].member_code === null) {
-                console.log("no member_code");
-                check_pass = false;
-              }
-              if (resultBilling[0].carrier_id === null) {
-                console.log("no carrier_id");
-                check_pass = false;
-              }
-              if (resultBilling[0].img_url === null) {
-                console.log("no img_url");
-                check_pass = false;
-              }
-              if (resultBilling[0].branch_id === null) {
-                console.log("no branch_id");
-                check_pass = false;
-              }
-              if (resultBilling[0].billing_no === null) {
-                console.log("no billing_no");
-                check_pass = false;
-              }
-              console.log("check_pass: %s   check_pass_item: %s      bill_no:%s",
-                check_pass,
-                check_pass_item,
-                resultBilling[0].billing_no
-              );
+              // for (i = 0; i < resultBillingItem.length; i++) {
+              //   if (resultBillingItem[i].sender_name === null) {
+              //     console.log("no sender_name");
+              //     check_pass_item = false;
+              //   }
+              //   if (resultBillingItem[i].sender_phone === null) {
+              //     console.log("no sender_phone");
+              //     check_pass_item = false;
+              //   }
+              //   if (resultBillingItem[i].sender_address === null) {
+              //     console.log("no sender_address");
+              //     check_pass_item = false;
+              //   }
+              //   if (resultBillingItem[i].bi_parcel_type === null) {
+              //     console.log("no bi_parcel_type");
+              //     check_pass_item = false;
+              //   }
+              //   if (resultBillingItem[i].size_price === null) {
+              //     console.log("no size_price");
+              //     check_pass_item = false;
+              //   }
+              //   if (resultBillingItem[i].receiver_name === null) {
+              //     console.log("no receiver_name");
+              //     check_pass_item = false;
+              //   }
+              //   if (resultBillingItem[i].phone === null) {
+              //     console.log("no phone");
+              //     check_pass_item = false;
+              //   }
+              //   if (resultBillingItem[i].receiver_address === null) {
+              //     console.log("no receiver_address");
+              //     check_pass_item = false;
+              //   }
+              //   if (resultBillingItem[i].DISTRICT_CODE === null) {
+              //     console.log("no DISTRICT_CODE");
+              //     check_pass_item = false;
+              //   }
+              //   if (resultBillingItem[i].AMPHUR_CODE === null) {
+              //     console.log("no AMPHUR_CODE");
+              //     check_pass_item = false;
+              //   }
+              //   if (resultBillingItem[i].PROVINCE_CODE === null) {
+              //     console.log("no PROVINCE_CODE");
+              //     check_pass_item = false;
+              //   }
+              //   if (resultBillingItem[i].br_zipcode === null) {
+              //     console.log("no br_zipcode");
+              //     check_pass_item = false;
+              //   }
+              //   if (resultBillingItem[i].product_id === null) {
+              //     console.log("no product_id");
+              //     check_pass_item = false;
+              //   }
+              //   if (resultBillingItem[i].product_name === null) {
+              //     console.log("no product_name");
+              //     check_pass_item = false;
+              //   }
+              //   if (resultBillingItem[i].GEO_ID === null) {
+              //     console.log("no GEO_ID");
+              //     check_pass_item = false;
+              //   }
+              //   if (resultBillingItem[i].tracking === null) {
+              //     console.log("no tracking");
+              //     check_pass_item = false;
+              //   }
+              //   // if (resultBillingItem[i].bi_parcel_type !== resultBillingItem[i].br_parcel_type) {
+              //   //   console.log("type not match");
+              //   //   check_pass_item = false;
+              //   // }
+              //   // if (resultBillingItem[i].bi_zipcode !== resultBillingItem[i].br_zipcode) {
+              //   //   console.log("zipcode not match");
+              //   //   check_pass_item = false;
+              //   // }
+              // }
+
+              // var check_pass = true;
+
+              // if (resultBilling[0].user_id === null) {
+              //   console.log("no user_id");
+              //   check_pass = false;
+              // }
+              // if (resultBilling[0].mer_authen_level === null) {
+              //   console.log("no mer_authen_level");
+              //   check_pass = false;
+              // }
+              // if (resultBilling[0].member_code === null) {
+              //   console.log("no member_code");
+              //   check_pass = false;
+              // }
+              // if (resultBilling[0].carrier_id === null) {
+              //   console.log("no carrier_id");
+              //   check_pass = false;
+              // }
+              // if (resultBilling[0].img_url === null) {
+              //   console.log("no img_url");
+              //   check_pass = false;
+              // }
+              // if (resultBilling[0].branch_id === null) {
+              //   console.log("no branch_id");
+              //   check_pass = false;
+              // }
+              // if (resultBilling[0].billing_no === null) {
+              //   console.log("no billing_no");
+              //   check_pass = false;
+              // }
+              // console.log("check_pass: %s   check_pass_item: %s      bill_no:%s",
+              //   check_pass,
+              //   check_pass_item,
+              //   resultBilling[0].billing_no
+              // );
               if (check_pass && check_pass_item) {
                 var dataResult = {
                   billingInfo: resultBilling,
@@ -272,8 +272,8 @@ module.exports = bus => {
   bus.on("update_status_to_null", msg => {
     console.log("update_status_to_null", msg);
     billingNo = msg;
-    // var status = "booked";
-    var status = "complete";
+    var status = "booked";
+    // var status = "complete";
     let sqlUpdateStatus = "UPDATE billing SET status=? WHERE billing_no=?";
     let data = [status, billingNo];
 
