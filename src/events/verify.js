@@ -158,6 +158,6 @@ module.exports = bus => {
     let data = [status, billingNo];
 
     connection.query(sqlUpdateStatus, data, function(err, result) {});
-    bus2.emit("update_last_process",{state:"reset complete"});
+    bus2.emit("update_last_process",{state:"reset booked"});
   });
 };
