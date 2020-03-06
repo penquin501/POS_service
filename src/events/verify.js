@@ -17,7 +17,7 @@ module.exports = bus => {
     let sqlBillingItem =
       "SELECT bItem.tracking,bItem.size_price,bItem.parcel_type as bi_parcel_type,bItem.zipcode as bi_zipcode,bItem.cod_value," +
       "br.sender_name,br.sender_phone,br.sender_address,br.receiver_name,br.phone,br.receiver_address,d.DISTRICT_CODE," +
-      "a.AMPHUR_CODE,p.PROVINCE_CODE,br.parcel_type as br_parcel_type,br.zipcode as br_zipcode,br.remark," +
+      "a.AMPHUR_CODE,p.PROVINCE_CODE,br.parcel_type as br_parcel_type,z.zipcode as br_zipcode,br.remark,br.courirer_id,br.booking_date," +
       "s.alias_size,gSize.product_id,gSize.product_name,g.GEO_ID,g.GEO_NAME " +
       "FROM billing_item bItem " +
       "LEFT JOIN billing_receiver_info br ON bItem.tracking=br.tracking " +
@@ -26,6 +26,7 @@ module.exports = bus => {
       "LEFT JOIN postinfo_district d ON br.district_id=d.DISTRICT_ID and br.amphur_id=d.AMPHUR_ID and br.province_id=d.PROVINCE_ID " +
       "LEFT JOIN postinfo_amphur a ON br.amphur_id=a.AMPHUR_ID " +
       "LEFT JOIN postinfo_province p ON br.province_id=p.PROVINCE_ID " +
+      "LEFT JOIN postinfo_zipcodes z ON d.DISTRICT_CODE=z.district_code " +
       "LEFT JOIN postinfo_geography g ON d.GEO_ID=g.GEO_ID " +
       "WHERE bItem.billing_no=? AND (br.status != 'cancel' or br.status is null)";
     var dataBillItem = [billingNo];
@@ -106,7 +107,10 @@ module.exports = bus => {
           senderphone: data[j].sender_phone,
           senderaddr: sender_address
         },
-        consignmentno: data[j].tracking
+        consignmentno: data[j].tracking,
+        transporter_id: data[j].courirer_id,
+			  user_id: "0",
+			  sendmaildate: data[j].booking_date
       };
       orderlist.push(dataDes);
     }
