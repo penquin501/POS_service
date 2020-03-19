@@ -108,7 +108,8 @@ module.exports = bus => {
           senderaddr: sender_address
         },
         consignmentno: data[j].tracking,
-        transporter_id: data[j].courirer_id,
+        // transporter_id: data[j].courirer_id,
+        transporter_id: 7,
 			  user_id: "0",
 			  sendmaildate: data[j].booking_date
       };
