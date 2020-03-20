@@ -37,13 +37,12 @@ module.exports = bus => {
 
     request(
       {
-        url:
-          "https://www.945holding.com/webservice/restful/parcel/order_record/v11/json_data",
+        url: process.env.W945_BILLING_API,
         method: "POST",
         body: msg.rawData,
         // json: true,
         headers: {
-          apikey: "XbOiHrrpH8aQXObcWj69XAom1b0ac5eda2b",
+          apikey: process.env.W945_APIKEY,
           "Content-Type": "application/json"
         }
       },
