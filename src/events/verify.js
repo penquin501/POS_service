@@ -1,5 +1,6 @@
 const connection = require("../env/db");
 const events = require("events");
+const momentTimezone = require("moment-timezone");
 const bus2 = new events.EventEmitter();
 
 require("./sendApi.js")(bus2);
@@ -58,7 +59,7 @@ module.exports = bus => {
 
   bus.on("set_json_format", msg => {
     bus2.emit("update_last_process",{state:"set JSON format"});
-    // console.log("set_json_format", msg);
+
     var billingInfo = msg.billingInfo;
     var data = msg.billingItem;
 
@@ -108,16 +109,17 @@ module.exports = bus => {
           senderaddr: sender_address
         },
         consignmentno: data[j].tracking,
+        // TODO: update courirer_id after "counter"'s application send data
         // transporter_id: data[j].courirer_id,
         transporter_id: 7,
-			  user_id: "0",
-			  sendmaildate: data[j].booking_date
+        user_id: "0",
+			  sendmaildate: momentTimezone(data[j].booking_date).tz("Asia/Bangkok").format("YYYY-MM-DD HH:mm:ss", true)
       };
       orderlist.push(dataDes);
     }
-    // console.log("orderlist",orderlist);
+
     var dataAll = {
-      apikey: "XbOiHrrpH8aQXObcWj69XAom1b0ac5eda2b",
+      apikey: process.env.W945_APIKEY,
       authen: {
         merid: billingInfo[0].branch_id,
         userid: billingInfo[0].user_id,
@@ -133,7 +135,7 @@ module.exports = bus => {
         orderlist: orderlist
       }
     };
-    // console.log("data to send", dataAll);
+
     var dataLog = {
       status: "set JSON format",
       billingNo: billingInfo[0].billing_no
@@ -158,7 +160,7 @@ module.exports = bus => {
     console.log("update_status_to_null", msg);
     billingNo = msg;
     var status = "booked";
-    // var status = "complete";
+
     let sqlUpdateStatus = "UPDATE billing SET status=? WHERE billing_no=?";
     let data = [status, billingNo];
 
