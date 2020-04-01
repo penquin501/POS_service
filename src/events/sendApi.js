@@ -81,12 +81,12 @@ module.exports = bus => {
     statusResult = JSON.parse(msg.result);
     if (statusResult.checkpass == "pass") {
       let sqlSelectTracking =
-        "SELECT tracking FROM billing_item WHERE billing_no=?";
+        // "SELECT tracking FROM billing_item WHERE billing_no=?";
+        "SELECT bi.tracking FROM billing_item bi "+
+        "LEFT JOIN billing_receiver_info br ON bi.tracking=br.tracking "+
+        "WHERE bi.billing_no=? and (br.status != 'cancel' or br.status is null)";
       let dataBilling = [billingNo];
-      connection.query(sqlSelectTracking, dataBilling, function(
-        err,
-        listTracking
-      ) {
+      connection.query(sqlSelectTracking, dataBilling, function(err,listTracking) {
         bus.emit("update_status_item", { listTracking: listTracking });
       });
       status = statusResult.checkpass;
